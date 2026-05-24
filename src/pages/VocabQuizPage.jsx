@@ -72,8 +72,10 @@ function ResultScreen({ score, total, onRestart }) {
       <div style={{ position: 'relative', width: 130, height: 130 }}>
         <svg viewBox="0 0 120 120" width="130" height="130">
           <circle cx="60" cy="60" r="52" fill="none" stroke="var(--track)" strokeWidth="9"/>
-          <circle cx="60" cy="60" r="52" fill="none"
+          <filter id="ringGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <circle cx="60" cy="60" r="52" fill="none"
             stroke={color} strokeWidth="9" strokeLinecap="round"
+            filter="url(#ringGlow)"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - pct / 100)}
             transform="rotate(-90 60 60)"
@@ -254,7 +256,10 @@ export function VocabQuizPage() {
               fontWeight: answered && correct ? 600 : 400,
               cursor: answered ? 'default' : 'pointer',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
-              transition: 'all 0.15s',
+              transition: 'all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              animation: answered && isCorrect(opt) ? 'qCorrect 0.4s cubic-bezier(0.34,1.56,0.64,1)'
+                : answered && isSelected(opt) && !isCorrect(opt) ? 'qWrong 0.4s ease'
+                : 'none',
             }}
               onMouseEnter={e => { if (!answered) { e.currentTarget.style.borderColor = '#14b8a6'; e.currentTarget.style.background = 'rgba(20,184,166,0.05)' } }}
               onMouseLeave={e => { if (!answered) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-card)' } }}
@@ -298,8 +303,20 @@ export function VocabQuizPage() {
 
       <style>{`
         @keyframes qFade {
-          from { opacity: 0; transform: translateY(8px); }
+          from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes qCorrect {
+          0%   { transform: scale(1); }
+          40%  { transform: scale(1.04); }
+          100% { transform: scale(1); }
+        }
+        @keyframes qWrong {
+          0%,100% { transform: translateX(0); }
+          20%     { transform: translateX(-7px); }
+          40%     { transform: translateX(7px); }
+          60%     { transform: translateX(-4px); }
+          80%     { transform: translateX(4px); }
         }
       `}</style>
     </div>

@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
+const FEATURES = [
+  { icon: '🎙', text: 'AI-powered conversation practice' },
+  { icon: '✅', text: 'Real-time grammar corrections' },
+  { icon: '🔥', text: 'Daily streaks & progress tracking' },
+  { icon: '📝', text: 'Vocabulary quiz challenges' },
+]
+
 export function AuthForm() {
   const { signIn, signUp } = useAuth()
   const [mode, setMode]         = useState('signin')
@@ -23,114 +30,171 @@ export function AuthForm() {
 
   if (success) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
-      <div style={{ textAlign: 'center', padding: '40px 32px', background: 'var(--bg-card)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: 20, maxWidth: 360, boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ textAlign: 'center', padding: '40px 32px', background: 'var(--bg-card)', border: '1px solid rgba(20,184,166,0.2)', borderRadius: 24, maxWidth: 360, boxShadow: 'var(--shadow-elevated)' }}>
         <div style={{ fontSize: 40, marginBottom: 14 }}>✉️</div>
-        <div style={{ fontWeight: 700, fontSize: 18, color: 'var(--text-primary)' }}>Check your inbox</div>
+        <div style={{ fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', letterSpacing: '-0.4px' }}>Check your inbox</div>
         <div style={{ fontSize: 14, marginTop: 8, color: 'var(--text-muted)', lineHeight: 1.6 }}>Confirm your email to start practising.</div>
         <button onClick={() => { setSuccess(false); setMode('signin') }} style={{
-          marginTop: 20, padding: '10px 22px', borderRadius: 10,
+          marginTop: 20, padding: '10px 24px', borderRadius: 10,
           border: '1px solid rgba(20,184,166,0.3)', background: 'transparent',
           color: '#14b8a6', cursor: 'pointer', fontSize: 14, fontWeight: 600,
-        }}>
-          Back to sign in
-        </button>
+          transition: 'all 0.2s ease',
+        }}>Back to sign in</button>
       </div>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', transition: 'background 0.25s ease' }}>
-      <div style={{
-        position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
-        width: 500, height: 500, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
+    <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-base)', transition: 'background 0.3s ease' }}>
+      <style>{`
+        @media (max-width: 820px) { .fl-auth-left { display: none !important; } .fl-auth-right { flex: 1 !important; } }
+        .fl-input:focus { border-color: #14b8a6 !important; box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important; }
+        .fl-chip:hover { background: rgba(20,184,166,0.08) !important; border-color: rgba(20,184,166,0.3) !important; }
+      `}</style>
 
-      <div style={{
-        width: '100%', maxWidth: 400,
-        background: 'var(--bg-card)',
-        borderRadius: 24, padding: '36px 32px',
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-card)',
-        position: 'relative', transition: 'background 0.25s ease',
+      {/* ── Left branding panel ── */}
+      <div className="fl-auth-left" style={{
+        flex: '0 0 44%',
+        background: 'linear-gradient(145deg, #060612 0%, #0a1628 50%, #060f14 100%)',
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: '60px 52px', position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>🗣️</div>
-          <div style={{
-            fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px',
-            background: 'linear-gradient(135deg, #14b8a6, #6366f1)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            Fluento
+        {/* Decorative blobs */}
+        <div style={{ position: 'absolute', top: -80, right: -60, width: 360, height: 360, borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.18) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', bottom: -80, left: -60, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.16) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ position: 'absolute', top: '45%', left: '55%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(20,184,166,0.07) 0%, transparent 70%)', pointerEvents: 'none' }}/>
+
+        {/* Subtle grid overlay */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)', backgroundSize: '40px 40px', pointerEvents: 'none' }}/>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 52 }}>
+            <span style={{ fontSize: 26 }}>🗣️</span>
+            <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #14b8a6, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Fluento
+            </span>
           </div>
-          <div style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 6 }}>
-            {mode === 'signin' ? 'Welcome back — keep your streak alive' : 'Start your English journey today'}
+
+          <h1 style={{ fontSize: 34, fontWeight: 800, color: '#eeeef8', letterSpacing: '-0.8px', lineHeight: 1.2, marginBottom: 16 }}>
+            Speak English<br/>with confidence.
+          </h1>
+          <p style={{ fontSize: 15, color: 'rgba(180,180,220,0.6)', lineHeight: 1.75, marginBottom: 44 }}>
+            Practice with an AI tutor that corrects your grammar, tracks your progress, and keeps you coming back.
+          </p>
+
+          {/* Feature list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 52 }}>
+            {FEATURES.map((f, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, background: 'rgba(20,184,166,0.1)', border: '1px solid rgba(20,184,166,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{f.icon}</div>
+                <span style={{ fontSize: 14, color: 'rgba(190,190,230,0.8)', fontWeight: 500 }}>{f.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Testimonial */}
+          <div style={{ padding: '18px 22px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ display: 'flex', gap: 2, marginBottom: 10 }}>
+              {[...Array(5)].map((_, i) => <span key={i} style={{ fontSize: 13 }}>⭐</span>)}
+            </div>
+            <p style={{ fontSize: 13, color: 'rgba(180,180,220,0.65)', lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>
+              "My confidence improved so much after two weeks. The corrections feel encouraging, not embarrassing."
+            </p>
+            <div style={{ marginTop: 10, fontSize: 12, color: 'rgba(180,180,220,0.35)', fontWeight: 600 }}>— Ana, Brazil</div>
           </div>
         </div>
+      </div>
 
-        {/* Mode toggle */}
-        <div style={{ display: 'flex', background: 'var(--bg-toggle)', borderRadius: 12, padding: 4, marginBottom: 24, border: '1px solid var(--border)' }}>
-          {['signin', 'signup'].map(m => (
-            <button key={m} onClick={() => { setMode(m); setError(null) }} style={{
-              flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 600, transition: 'all 0.15s',
-              background: mode === m ? '#14b8a6' : 'transparent',
-              color: mode === m ? 'white' : 'var(--text-muted)',
+      {/* ── Right form panel ── */}
+      <div className="fl-auth-right" style={{
+        flex: '0 0 56%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '48px 40px',
+        background: 'var(--bg-base)', transition: 'background 0.3s ease',
+      }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+
+          {/* Mobile-only logo */}
+          <div style={{ display: 'none', textAlign: 'center', marginBottom: 40 }} className="fl-mobile-logo">
+            <span style={{ fontSize: 32 }}>🗣️</span>
+            <div style={{ fontSize: 24, fontWeight: 800, marginTop: 8, background: 'linear-gradient(135deg, #14b8a6, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Fluento</div>
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <h2 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px', marginBottom: 6 }}>
+              {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+            </h2>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+              {mode === 'signin' ? 'Keep your streak alive and keep improving.' : 'Start your English journey today — it\'s free.'}
+            </p>
+          </div>
+
+          {/* Mode toggle */}
+          <div style={{ display: 'flex', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 4, marginBottom: 28, gap: 4 }}>
+            {['signin', 'signup'].map(m => (
+              <button key={m} onClick={() => { setMode(m); setError(null) }} style={{
+                flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', cursor: 'pointer',
+                fontSize: 13, fontWeight: 600, transition: 'all 0.2s ease',
+                background: mode === m ? '#14b8a6' : 'transparent',
+                color: mode === m ? 'white' : 'var(--text-muted)',
+                boxShadow: mode === m ? '0 2px 8px rgba(20,184,166,0.3)' : 'none',
+              }}>
+                {m === 'signin' ? 'Sign in' : 'Sign up'}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handle} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[
+              { label: 'Email',    type: 'email',    value: email,    set: setEmail,    ph: 'you@example.com' },
+              { label: 'Password', type: 'password', value: password, set: setPassword, ph: '••••••••' },
+            ].map(f => (
+              <div key={f.label}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                  {f.label}
+                </label>
+                <input
+                  className="fl-input"
+                  type={f.type}
+                  placeholder={f.ph}
+                  value={f.value}
+                  onChange={e => f.set(e.target.value)}
+                  required
+                  minLength={f.type === 'password' ? 6 : undefined}
+                  style={{
+                    width: '100%', padding: '12px 16px', borderRadius: 12,
+                    border: '1.5px solid var(--border-input)',
+                    background: 'var(--bg-input)', fontSize: 14,
+                    color: 'var(--text-primary)', outline: 'none',
+                    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+                  }}
+                />
+              </div>
+            ))}
+
+            {error && (
+              <div style={{ fontSize: 13, color: '#f87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '11px 14px', lineHeight: 1.5 }}>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} style={{
+              padding: '13px 0', marginTop: 4, borderRadius: 12, border: 'none',
+              background: loading ? 'var(--bg-card)' : 'linear-gradient(135deg, #14b8a6, #0d9488)',
+              color: loading ? 'var(--text-muted)' : 'white',
+              fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: loading ? 'none' : 'var(--shadow-btn)',
+              transition: 'all 0.2s ease',
+              letterSpacing: '-0.01em',
             }}>
-              {m === 'signin' ? 'Sign in' : 'Sign up'}
+              {loading ? 'Please wait…' : mode === 'signin' ? 'Sign in →' : 'Create account →'}
             </button>
-          ))}
-        </div>
+          </form>
 
-        <form onSubmit={handle} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[
-            { label: 'Email',    type: 'email',    value: email,    set: setEmail,    placeholder: 'you@example.com' },
-            { label: 'Password', type: 'password', value: password, set: setPassword, placeholder: '••••••••' },
-          ].map(f => (
-            <div key={f.label}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-                {f.label}
-              </label>
-              <input
-                type={f.type}
-                placeholder={f.placeholder}
-                value={f.value}
-                onChange={e => f.set(e.target.value)}
-                required
-                minLength={f.type === 'password' ? 6 : undefined}
-                style={{
-                  width: '100%', padding: '12px 16px', borderRadius: 12,
-                  border: '1px solid var(--border-input)',
-                  background: 'var(--bg-input)', fontSize: 14,
-                  color: 'var(--text-primary)', outline: 'none', transition: 'border-color 0.15s',
-                }}
-                onFocus={e => e.target.style.borderColor = '#14b8a6'}
-                onBlur={e  => e.target.style.borderColor = 'var(--border-input)'}
-              />
-            </div>
-          ))}
-
-          {error && (
-            <div style={{ fontSize: 13, color: '#f87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '10px 14px' }}>
-              {error}
-            </div>
-          )}
-
-          <button type="submit" disabled={loading} style={{
-            padding: '13px 0', marginTop: 4, borderRadius: 12, border: 'none',
-            background: loading ? 'var(--bg-toggle)' : 'linear-gradient(135deg, #14b8a6, #0d9488)',
-            color: loading ? 'var(--text-muted)' : 'white',
-            fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
-            boxShadow: loading ? 'none' : 'var(--shadow-btn)',
-            transition: 'all 0.15s',
-          }}>
-            {loading ? 'Please wait…' : mode === 'signin' ? 'Sign in →' : 'Create account →'}
-          </button>
-        </form>
-
-        <div style={{ marginTop: 24, textAlign: 'center', fontSize: 12, color: 'var(--text-dim)' }}>
-          🔒 Secured by Supabase Auth
+          <div style={{ marginTop: 28, textAlign: 'center', fontSize: 12, color: 'var(--text-dim)' }}>
+            🔒 Secured with Supabase Auth
+          </div>
         </div>
       </div>
     </div>

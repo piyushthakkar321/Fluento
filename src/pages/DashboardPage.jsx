@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip,
+  AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
 } from 'recharts'
 import { getStreak, getRecentSessions } from '../lib/sessionApi'
@@ -145,12 +145,15 @@ export function DashboardPage() {
         {sessions.length > 0 && (
           <button onClick={() => setShowShare(true)} style={{
             padding: '9px 16px', borderRadius: 12,
-            background: 'linear-gradient(135deg, #14b8a6, #6366f1)',
+            background: 'linear-gradient(135deg, #14b8a6 0%, #6366f1 100%)',
             border: 'none', color: 'white',
             fontSize: 13, fontWeight: 700, cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(20,184,166,0.25)', whiteSpace: 'nowrap', flexShrink: 0,
+            boxShadow: '0 4px 20px rgba(20,184,166,0.35)',
+            whiteSpace: 'nowrap', flexShrink: 0,
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            letterSpacing: '-0.01em',
           }}>🔗 Share progress</button>
-        )}
+          )}
       </div>
 
       {/* Stat cards */}
@@ -182,11 +185,16 @@ export function DashboardPage() {
             Score history
           </p>
           <ResponsiveContainer width="100%" height={210}>
-            <LineChart data={chartData} margin={{ left: 0, right: 10, top: 4, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ left: 0, right: 10, top: 4, bottom: 0 }}>
               <defs>
                 <linearGradient id="chartGrad" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%"   stopColor="#6366f1"/>
                   <stop offset="100%" stopColor="#14b8a6"/>
+                </linearGradient>
+                <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor="#14b8a6" stopOpacity="0.2"/>
+                  <stop offset="75%"  stopColor="#14b8a6" stopOpacity="0.03"/>
+                  <stop offset="100%" stopColor="#14b8a6" stopOpacity="0"/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
@@ -221,15 +229,16 @@ export function DashboardPage() {
                 }}
                 cursor={{ stroke: 'rgba(99,102,241,0.3)', strokeWidth: 1 }}
               />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="score"
                 stroke="url(#chartGrad)"
                 strokeWidth={2.5}
+                fill="url(#areaFill)"
                 dot={{ r: 3.5, fill: '#14b8a6', strokeWidth: 0 }}
                 activeDot={{ r: 6, fill: '#14b8a6' }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       ) : (
@@ -278,11 +287,18 @@ export function DashboardPage() {
 function StatCard({ label, value, icon, highlight = false }) {
   return (
     <div style={{
-      background: highlight ? 'rgba(234,88,12,0.07)' : 'var(--bg-card)',
-      border: `1px solid ${highlight ? 'rgba(234,88,12,0.25)' : 'var(--border)'}`,
-      borderRadius: 16, padding: '18px 16px',
+      background: highlight
+        ? 'linear-gradient(145deg, rgba(234,88,12,0.09) 0%, rgba(234,88,12,0.04) 100%)'
+        : 'linear-gradient(145deg, var(--bg-card) 0%, rgba(20,184,166,0.03) 100%)',
+      border: `1px solid ${highlight ? 'rgba(234,88,12,0.22)' : 'var(--border)'}`,
+      borderRadius: 18, padding: '20px 18px',
       display: 'flex', flexDirection: 'column', gap: 8,
-    }}>
+      boxShadow: 'var(--shadow-card)',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)' }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)' }}
+    >
       <span style={{ fontSize: 22 }}>{icon}</span>
       <span style={{ fontSize: 26, fontWeight: 800, color: highlight ? '#fb923c' : 'var(--text-primary)', letterSpacing: '-0.5px' }}>{value}</span>
       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{label}</span>

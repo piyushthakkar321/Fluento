@@ -85,11 +85,25 @@ function TopicChips({ onSelect }) {
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
             fontSize: 13, color: 'var(--text-secondary)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-            transition: 'all 0.15s',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
+            transition: 'all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            fontWeight: 500,
           }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#14b8a6'; e.currentTarget.style.color = '#14b8a6' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = 'rgba(20,184,166,0.45)'
+              e.currentTarget.style.color = '#14b8a6'
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)'
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(20,184,166,0.18)'
+              e.currentTarget.style.background = 'rgba(20,184,166,0.06)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+              e.currentTarget.style.background = 'var(--bg-card)'
+            }}
           >
             <span>{t.icon}</span>{t.text}
           </button>
@@ -256,8 +270,13 @@ export function TutorPage({ onSessionSaved }) {
       {/* Background glow */}
       <div style={{
         position: 'fixed', top: '25%', left: '50%', transform: 'translateX(-50%)',
-        width: 600, height: 500, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse, rgba(20,184,166,0.05) 0%, transparent 70%)',
+        width: 700, height: 600, pointerEvents: 'none',
+        background: `radial-gradient(ellipse, ${
+          tutorState === 'listening' ? 'rgba(239,68,68,0.07)'
+          : tutorState === 'thinking' ? 'rgba(245,158,11,0.06)'
+          : 'rgba(20,184,166,0.06)'
+        } 0%, transparent 65%)`,
+        transition: 'background 0.7s ease',
       }}/>
 
       <div style={{ width: '100%', maxWidth: 580, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, position: 'relative' }}>

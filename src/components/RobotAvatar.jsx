@@ -143,10 +143,16 @@ export function RobotAvatar({ tutorState, response }) {
       <div style={{
         position: 'absolute', top: '30%', left: '50%',
         transform: 'translate(-50%,-50%)',
-        width: 230, height: 230, borderRadius: '50%',
-        background: `radial-gradient(circle, rgba(${eyeGlowRgb},${isListening || isSpeaking ? 0.1 : 0.04}) 0%, transparent 70%)`,
-        filter: 'blur(22px)',
-        transition: 'background 0.6s ease',
+        width: 280, height: 280, borderRadius: '50%',
+        background: isListening
+          ? 'radial-gradient(circle, rgba(239,68,68,0.16) 0%, transparent 68%)'
+          : isThinking
+          ? 'radial-gradient(circle, rgba(245,158,11,0.14) 0%, transparent 68%)'
+          : isSpeaking
+          ? 'radial-gradient(circle, rgba(20,184,166,0.16) 0%, transparent 68%)'
+          : 'radial-gradient(circle, rgba(20,184,166,0.07) 0%, transparent 68%)',
+        filter: 'blur(28px)',
+        transition: 'background 0.7s ease',
         pointerEvents: 'none',
       }}/>
 
