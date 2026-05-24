@@ -5,6 +5,7 @@ import {
 } from 'recharts'
 import { getStreak, getRecentSessions } from '../lib/sessionApi'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 
 // ─── Share modal ───────────────────────────────────────────────────────────────
 function ShareModal({ sessions, streak, onClose }) {
@@ -99,12 +100,61 @@ function ShareModal({ sessions, streak, onClose }) {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-export function DashboardPage() {
+function EmptyState({ onNavigateToPractice }) {
+  return (
+    <div style={{ padding: '40px 24px 32px', textAlign: 'center' }}>
+      <div style={{ fontSize: 64, marginBottom: 16 }}>🗣️</div>
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.4px', marginBottom: 8 }}>
+        Start your journey
+      </h2>
+      <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 36, maxWidth: 300, margin: '0 auto 36px' }}>
+        Complete your first session to see your progress, scores, and streaks here.
+      </p>
+
+      {/* Onboarding steps */}
+      <div style={{ textAlign: 'left', marginBottom: 36 }}>
+        {[
+          { step: '1', icon: '🎙', title: 'Tap the mic', desc: 'Go to Practice and start speaking — any topic is fine.' },
+          { step: '2', icon: '✅', title: 'Get corrections', desc: 'Fluento corrects your grammar and gives a score.' },
+          { step: '3', icon: '📊', title: 'Track progress', desc: 'See your score chart and streak build over time.' },
+        ].map(s => (
+          <div key={s.step} style={{ display: 'flex', gap: 16, marginBottom: 22, alignItems: 'flex-start' }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+              background: 'var(--accent-dim)', border: '2px solid var(--accent)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, fontWeight: 800, color: 'var(--accent)',
+            }}>{s.step}</div>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>
+                {s.icon} {s.title}
+              </div>
+              <div style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{s.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button onClick={onNavigateToPractice} style={{
+        width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
+        background: 'var(--accent)', color: '#fff',
+        fontSize: 16, fontWeight: 700, cursor: 'pointer',
+        boxShadow: '0 6px 24px rgba(20,184,166,0.35)',
+      }}>
+        Start your first session →
+      </button>
+    </div>
+  )
+}
+
+export function DashboardPage({ onNavigateToPractice }) {
   const { user }                  = useAuth()
   const [streak, setStreak]       = useState(null)
   const [sessions, setSessions]   = useState([])
   const [loading, setLoading]     = useState(true)
   const [showShare, setShowShare] = useState(false)
+  const { theme, toggle: toggleTheme } = useTheme()
+  const { signOut } = useAuth()
 
   useEffect(() => {
     if (!user) return
@@ -137,25 +187,39 @@ export function DashboardPage() {
       {showShare && <ShareModal sessions={sessions} streak={streak} onClose={() => setShowShare(false)}/>}
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-        <div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Your progress</h2>
-          <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>Keep practising daily to improve your score.</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.4px' }}>Your progress</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Theme toggle */}
+          <button onClick={toggleTheme} style={{
+            width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)',
+            background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16,
+          }}>
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+          {/* Sign out */}
+          <button onClick={signOut} style={{
+            height: 38, padding: '0 14px', borderRadius: 10, border: '1px solid var(--border)',
+            background: 'var(--bg-card)', fontSize: 13, fontWeight: 600,
+            color: 'var(--text-muted)', cursor: 'pointer',
+          }}>Sign out</button>
         </div>
-        {sessions.length > 0 && (
-          <button onClick={() => setShowShare(true)} style={{
-            padding: '9px 16px', borderRadius: 12,
-            background: 'linear-gradient(135deg, #14b8a6 0%, #6366f1 100%)',
-            border: 'none', color: 'white',
-            fontSize: 13, fontWeight: 700, cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(20,184,166,0.35)',
-            whiteSpace: 'nowrap', flexShrink: 0,
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            letterSpacing: '-0.01em',
-          }}>🔗 Share progress</button>
-          )}
       </div>
 
+      {/* Empty state */}
+      {!loading && sessions.length === 0 && <EmptyState onNavigateToPractice={onNavigateToPractice}/>}
+
+      {sessions.length > 0 && (
+        <button onClick={() => setShowShare(true)} style={{
+          width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
+          background: 'linear-gradient(135deg, var(--accent), #6366f1)',
+          color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          boxShadow: '0 4px 20px rgba(20,184,166,0.3)',
+        }}>🔗 Share my progress</button>
+      )}
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
         <StatCard label="Total sessions" value={sessions.length}                    icon="💬"/>
@@ -280,6 +344,7 @@ export function DashboardPage() {
           })}
         </div>
       )}
+    </div>
     </div>
   )
 }

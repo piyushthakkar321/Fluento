@@ -1,24 +1,24 @@
 import { useState, useRef, useEffect } from 'react'
 import { TutorResponse } from '../components/TutorResponse'
 import { RobotAvatar } from '../components/RobotAvatar'
+import { StreakBadge } from '../components/StreakBadge'
 import { getTutorResponse } from '../lib/tutorApi'
 import { saveSession } from '../lib/sessionApi'
 import { useAuth } from '../context/AuthContext'
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder'
 
-// ─── Text-to-speech hook ──────────────────────────────────────────────────────
+// ── TTS ───────────────────────────────────────────────────────────────────────
 function useTTS() {
-  const [muted, setMuted]     = useState(false)
-  const [active, setActive]   = useState(false)
-  const uttRef                = useRef(null)
+  const [muted, setMuted]   = useState(false)
+  const [active, setActive] = useState(false)
+  const uttRef              = useRef(null)
 
   const speak = (text) => {
     if (muted || !window.speechSynthesis) return
     window.speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(text)
+    const utt   = new SpeechSynthesisUtterance(text)
     utt.lang    = 'en-US'
     utt.rate    = 0.88
-    utt.pitch   = 1.05
     utt.onstart = () => setActive(true)
     utt.onend   = () => setActive(false)
     utt.onerror = () => setActive(false)
@@ -27,40 +27,11 @@ function useTTS() {
   }
 
   const stop = () => { window.speechSynthesis?.cancel(); setActive(false) }
-
-  // Cleanup on unmount
   useEffect(() => () => window.speechSynthesis?.cancel(), [])
-
   return { speak, stop, muted, active, toggleMute: () => { stop(); setMuted(m => !m) } }
 }
 
-// ─── Difficulty selector ──────────────────────────────────────────────────────
-function DifficultySelector({ value, onChange }) {
-  const levels = [
-    { key: 'easy',   label: '🌱 Easy',   color: '#10b981' },
-    { key: 'medium', label: '⚡ Medium', color: '#14b8a6' },
-    { key: 'hard',   label: '🔥 Hard',   color: '#6366f1' },
-  ]
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Level</span>
-      <div style={{ display: 'flex', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 3, gap: 2 }}>
-        {levels.map(l => (
-          <button key={l.key} onClick={() => onChange(l.key)} style={{
-            padding: '5px 13px', borderRadius: 9, border: 'none', cursor: 'pointer',
-            fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
-            background: value === l.key ? l.color : 'transparent',
-            color:      value === l.key ? 'white'  : 'var(--text-muted)',
-          }}>
-            {l.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── Topic suggestion chips ───────────────────────────────────────────────────
+// ── Topic chips ───────────────────────────────────────────────────────────────
 const TOPICS = [
   { icon: '☀️', text: 'Tell me about your day' },
   { icon: '🏙️', text: 'Describe your hometown' },
@@ -68,129 +39,25 @@ const TOPICS = [
   { icon: '✈️', text: 'Your dream vacation' },
   { icon: '🎮', text: 'A hobby you enjoy' },
   { icon: '📺', text: 'A film or show you liked' },
-  { icon: '💼', text: 'Talk about your job or studies' },
-  { icon: '🐾', text: 'Do you have any pets?' },
+  { icon: '💼', text: 'Talk about your job' },
+  { icon: '🐾', text: 'Do you have pets?' },
 ]
 
-function TopicChips({ onSelect }) {
-  return (
-    <div style={{ width: '100%' }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-        Or pick a topic to get started
-      </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-        {TOPICS.map((t, i) => (
-          <button key={i} onClick={() => onSelect(t.text)} style={{
-            padding: '7px 14px', borderRadius: 99,
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            fontSize: 13, color: 'var(--text-secondary)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7,
-            transition: 'all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            fontWeight: 500,
-          }}
-            onMouseEnter={e => {
-              e.currentTarget.style.borderColor = 'rgba(20,184,166,0.45)'
-              e.currentTarget.style.color = '#14b8a6'
-              e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)'
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(20,184,166,0.18)'
-              e.currentTarget.style.background = 'rgba(20,184,166,0.06)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.borderColor = 'var(--border)'
-              e.currentTarget.style.color = 'var(--text-secondary)'
-              e.currentTarget.style.transform = 'translateY(0) scale(1)'
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
-              e.currentTarget.style.background = 'var(--bg-card)'
-            }}
-          >
-            <span>{t.icon}</span>{t.text}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
+const STATE_LABELS = {
+  idle:      'Tap the mic to speak',
+  listening: 'Listening…',
+  thinking:  'Thinking…',
+  speaking:  'Responding…',
+}
+const STATE_COLORS = {
+  idle:      'var(--text-muted)',
+  listening: '#ef4444',
+  thinking:  '#f59e0b',
+  speaking:  'var(--accent)',
 }
 
-// ─── Mic button ───────────────────────────────────────────────────────────────
-function MicControl({ recordingState, onToggle, tts }) {
-  const isRecording    = recordingState === 'recording'
-  const isTranscribing = recordingState === 'transcribing'
-
-  const label =
-    isTranscribing ? 'Transcribing…' : isRecording ? 'Tap to stop' : 'Tap to speak'
-
-  const btnColor =
-    isRecording ? '#ef4444' : isTranscribing ? '#f59e0b' : '#14b8a6'
-
-  const btnGlow =
-    isRecording    ? 'rgba(239,68,68,0.35)'
-    : isTranscribing ? 'rgba(245,158,11,0.25)'
-    : 'rgba(20,184,166,0.25)'
-
-  // Icons
-  const SpeakerOn  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-  const SpeakerOff = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-      <button
-        onClick={onToggle}
-        disabled={isTranscribing}
-        aria-label={label}
-        style={{
-          width: 62, height: 62, borderRadius: '50%', border: 'none',
-          background: btnColor,
-          boxShadow: `0 0 0 9px ${btnGlow}, 0 8px 24px ${btnGlow}`,
-          color: 'white', cursor: isTranscribing ? 'not-allowed' : 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.2s ease',
-          transform: isRecording ? 'scale(1.09)' : 'scale(1)',
-        }}
-      >
-        {isTranscribing ? (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"
-            style={{ animation: 'mcSpin 0.8s linear infinite' }}>
-            <circle cx="12" cy="12" r="9" strokeOpacity="0.25"/>
-            <path d="M12 3a9 9 0 0 1 9 9" strokeLinecap="round"/>
-          </svg>
-        ) : isRecording ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-            <rect x="4" y="4" width="16" height="16" rx="3"/>
-          </svg>
-        ) : (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8"  y1="23" x2="16" y2="23"/>
-          </svg>
-        )}
-      </button>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: '0.03em' }}>
-          {label}
-        </span>
-        {/* Mute/unmute TTS */}
-        <button onClick={tts.toggleMute} title={tts.muted ? 'Unmute voice' : 'Mute voice'} style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border)',
-          borderRadius: 8, padding: '4px 8px', cursor: 'pointer',
-          color: tts.muted ? 'var(--text-dim)' : '#14b8a6',
-          display: 'flex', alignItems: 'center', transition: 'all 0.15s',
-        }}>
-          {tts.muted ? <SpeakerOff/> : <SpeakerOn/>}
-        </button>
-      </div>
-
-      <style>{`@keyframes mcSpin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-export function TutorPage({ onSessionSaved }) {
+// ── Page ──────────────────────────────────────────────────────────────────────
+export function TutorPage({ onSessionSaved, streakKey }) {
   const { user } = useAuth()
   const [transcript, setTranscript]           = useState('')
   const [response, setResponse]               = useState(null)
@@ -199,10 +66,9 @@ export function TutorPage({ onSessionSaved }) {
   const [history, setHistory]                 = useState([])
   const [difficulty, setDifficulty]           = useState('medium')
   const [isSpeakingState, setIsSpeakingState] = useState(false)
-
   const speakTimerRef       = useRef(null)
   const handleTranscriptRef = useRef(null)
-  const tts                 = useTTS()
+  const tts = useTTS()
 
   const { state: recordingState, toggle } = useVoiceRecorder({
     onTranscript: (text) => handleTranscriptRef.current?.(text),
@@ -220,113 +86,207 @@ export function TutorPage({ onSessionSaved }) {
     setError(null)
     setLoading(true)
     setResponse(null)
-
     try {
       const result = await getTutorResponse(text, history, difficulty)
       setResponse(result)
-
       setHistory(prev => [
         ...prev,
         { role: 'user',      content: text },
         { role: 'assistant', content: result.reply },
       ].slice(-10))
-
-      // Speak the reply
       tts.speak(result.reply)
-
-      // Avatar speaking animation
       setIsSpeakingState(true)
       clearTimeout(speakTimerRef.current)
       speakTimerRef.current = setTimeout(() => setIsSpeakingState(false), 5000)
-
       await saveSession(user.id, {
         transcript: text,
-        reply:       result.reply,
+        reply:      result.reply,
         corrections: result.corrections,
-        score:       result.score,
+        score:      result.score,
       })
       onSessionSaved?.()
-    } catch (err) {
-      setError('Something went wrong. Check your connection and try again.')
+    } catch {
+      setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  // Keep ref up to date
   handleTranscriptRef.current = processMessage
 
-  // Topic chip clicked — send as message directly
   const handleTopicSelect = (topicText) => {
     if (recordingState !== 'idle' || loading) return
-    processMessage(`Let's talk about this topic: ${topicText}`)
+    processMessage(`Let's talk about: ${topicText}`)
   }
 
-  const showTopics = !transcript && tutorState === 'idle'
+  const isRecording    = recordingState === 'recording'
+  const isTranscribing = recordingState === 'transcribing'
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 20px 80px' }}>
+    <>
+      <style>{`
+        @keyframes tpPulse {
+          0%,100% { opacity:1; transform:scale(1); }
+          50%      { opacity:0.4; transform:scale(0.75); }
+        }
+        @keyframes tpMicRing {
+          0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.35), 0 8px 28px rgba(239,68,68,0.4); }
+          50%      { box-shadow: 0 0 0 16px rgba(239,68,68,0), 0 8px 28px rgba(239,68,68,0.4); }
+        }
+        @keyframes tpSpin { to { transform:rotate(360deg); } }
+      `}</style>
 
-      {/* Background glow */}
-      <div style={{
-        position: 'fixed', top: '25%', left: '50%', transform: 'translateX(-50%)',
-        width: 700, height: 600, pointerEvents: 'none',
-        background: `radial-gradient(ellipse, ${
-          tutorState === 'listening' ? 'rgba(239,68,68,0.07)'
-          : tutorState === 'thinking' ? 'rgba(245,158,11,0.06)'
-          : 'rgba(20,184,166,0.06)'
-        } 0%, transparent 65%)`,
-        transition: 'background 0.7s ease',
-      }}/>
-
-      <div style={{ width: '100%', maxWidth: 580, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, position: 'relative' }}>
+      {/* ── Scrollable content ── */}
+      <div style={{ background: 'var(--bg-base)', paddingBottom: 160 }}>
 
         {/* Header row */}
-        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-          {showTopics && (
-            <div>
-              <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.4px', margin: 0 }}>
-                Your AI English tutor
-              </h1>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-                Tap the mic and start talking.
-              </p>
-            </div>
-          )}
-          {!showTopics && <div/>}
-          <DifficultySelector value={difficulty} onChange={setDifficulty}/>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 4px' }}>
+          <StreakBadge key={streakKey} userId={user.id}/>
+          {/* Difficulty selector */}
+          <div style={{ display: 'flex', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 3, gap: 2 }}>
+            {[
+              { key: 'easy',   label: 'Easy',   color: '#10b981' },
+              { key: 'medium', label: 'Med',    color: 'var(--accent)' },
+              { key: 'hard',   label: 'Hard',   color: '#6366f1' },
+            ].map(l => (
+              <button key={l.key} onClick={() => setDifficulty(l.key)} style={{
+                padding: '6px 13px', borderRadius: 7, border: 'none',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                background: difficulty === l.key ? l.color : 'transparent',
+                color:      difficulty === l.key ? '#fff'   : 'var(--text-muted)',
+                minHeight: 34, transition: 'background 0.15s ease',
+              }}>{l.label}</button>
+            ))}
+          </div>
         </div>
 
         {/* Robot */}
-        <RobotAvatar tutorState={tutorState} response={response}/>
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}>
+          <RobotAvatar tutorState={tutorState} response={response}/>
+        </div>
 
-        {/* Mic */}
-        <MicControl recordingState={recordingState} onToggle={toggle} tts={tts}/>
+        {/* State label */}
+        <div style={{ textAlign: 'center', padding: '4px 20px 20px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            {tutorState === 'listening' && (
+              <div style={{ width: 9, height: 9, borderRadius: '50%', background: '#ef4444', animation: 'tpPulse 1.1s ease-in-out infinite' }}/>
+            )}
+            <span style={{
+              fontSize: 16, fontWeight: 700,
+              color: STATE_COLORS[tutorState],
+              transition: 'color 0.3s ease',
+            }}>
+              {STATE_LABELS[tutorState]}
+            </span>
+          </div>
+        </div>
+
+        {/* Topic chips — horizontal scroll, only when no conversation yet */}
+        {!transcript && tutorState === 'idle' && (
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center', marginBottom: 14 }}>
+              Or pick a topic
+            </p>
+            <div className="hide-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '2px 20px 4px', WebkitOverflowScrolling: 'touch' }}>
+              {TOPICS.map((t, i) => (
+                <button key={i} onClick={() => handleTopicSelect(t.text)} style={{
+                  display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0,
+                  padding: '11px 18px', borderRadius: 99,
+                  background: 'var(--bg-card)', border: '1px solid var(--border)',
+                  fontSize: 13.5, fontWeight: 500, color: 'var(--text-secondary)',
+                  cursor: 'pointer', minHeight: 48,
+                }}>
+                  <span>{t.icon}</span><span style={{ whiteSpace: 'nowrap' }}>{t.text}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Error */}
         {error && (
-          <div style={{ fontSize: 14, color: '#f87171', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 12, padding: '12px 18px', width: '100%' }}>
+          <div style={{ margin: '16px 20px 0', padding: '14px 16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 14, fontSize: 14, color: '#f87171', lineHeight: 1.5 }}>
             {error}
           </div>
         )}
 
         {/* Transcript */}
         {transcript && (
-          <div style={{ width: '100%', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '16px 20px', transition: 'background 0.25s ease' }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              You said
-            </span>
-            <p style={{ margin: '8px 0 0', fontSize: 15, lineHeight: 1.7, color: 'var(--text-body)' }}>{transcript}</p>
+          <div style={{ margin: '16px 20px 0', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 18, padding: '16px 18px', boxShadow: 'var(--shadow-card)' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>You said</span>
+            <p style={{ margin: '8px 0 0', fontSize: 16, lineHeight: 1.65, color: 'var(--text-body)', fontWeight: 500 }}>{transcript}</p>
           </div>
         )}
 
-        {/* Topic chips — shown only when idle */}
-        {showTopics && <TopicChips onSelect={handleTopicSelect}/>}
-
         {/* AI response */}
-        <TutorResponse response={response} loading={loading}/>
-
+        <div style={{ padding: '0 20px' }}>
+          <TutorResponse response={response} loading={loading}/>
+        </div>
       </div>
-    </div>
+
+      {/* ── Fixed mic zone ── */}
+      <div style={{
+        position: 'fixed', bottom: 64, left: 0, right: 0, zIndex: 50,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '14px 0 10px',
+        background: 'linear-gradient(to top, var(--bg-base) 65%, transparent)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+
+          {/* Mute toggle */}
+          <button onClick={tts.toggleMute} style={{
+            width: 46, height: 46, borderRadius: '50%',
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: tts.muted ? 'var(--text-dim)' : 'var(--text-secondary)',
+          }}>
+            {tts.muted
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            }
+          </button>
+
+          {/* Big mic button */}
+          <button
+            onClick={toggle}
+            disabled={isTranscribing}
+            aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+            style={{
+              width: 80, height: 80, borderRadius: '50%', border: 'none',
+              background: isRecording ? '#ef4444' : isTranscribing ? '#f59e0b' : 'var(--accent)',
+              color: '#fff', cursor: isTranscribing ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              animation: isRecording ? 'tpMicRing 1.6s ease-in-out infinite' : 'none',
+              boxShadow: isRecording
+                ? '0 8px 28px rgba(239,68,68,0.4)'
+                : '0 8px 28px rgba(20,184,166,0.4)',
+              transition: 'background 0.2s ease, box-shadow 0.2s ease',
+            }}
+          >
+            {isTranscribing ? (
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"
+                style={{ animation: 'tpSpin 0.8s linear infinite' }}>
+                <circle cx="12" cy="12" r="9" strokeOpacity="0.25"/>
+                <path d="M12 3a9 9 0 0 1 9 9" strokeLinecap="round"/>
+              </svg>
+            ) : isRecording ? (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                <rect x="4" y="4" width="16" height="16" rx="3"/>
+              </svg>
+            ) : (
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8"  y1="23" x2="16" y2="23"/>
+              </svg>
+            )}
+          </button>
+
+          {/* Spacer for symmetry */}
+          <div style={{ width: 46 }}/>
+        </div>
+      </div>
+    </>
   )
 }
