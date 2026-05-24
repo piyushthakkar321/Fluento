@@ -9,39 +9,53 @@ export async function saveSession(userId, { transcript, reply, corrections, scor
   })
   if (sessionError) throw sessionError
 
+  await updateStreak(userId)
+}
+
+async function updateStreak(userId) {
   const today     = new Date().toISOString().split('T')[0]
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 
-  // maybeSingle() returns null instead of throwing when no row exists
-  const { data: streak } = await supabase
+  // maybeSingle returns null instead of throwing when no row exists
+  const { data: existing, error: fetchError } = await supabase
     .from('streaks')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle()
 
-  const last    = streak?.last_session_date ?? null
-  const current = streak?.current_streak    ?? 0
-  const longest = streak?.longest_streak    ?? 0
+  if (fetchError) { console.error('Streak fetch error:', fetchError); return }
 
-  const newStreak =
-    last === today      ? current           // already practiced today — no change
-    : last === yesterday ? current + 1      // continuing streak
-    : 1                                     // broken or first ever
+  if (!existing) {
+    // First ever session — insert a fresh row
+    await supabase.from('streaks').insert({
+      user_id:           userId,
+      current_streak:    1,
+      longest_streak:    1,
+      last_session_date: today,
+    })
+    return
+  }
 
-  const { error: streakError } = await supabase
+  const last    = existing.last_session_date
+  const current = existing.current_streak
+  const longest = existing.longest_streak
+
+  // Already practiced today — nothing to change
+  if (last === today) return
+
+  const newStreak = last === yesterday ? current + 1 : 1
+  const newLongest = Math.max(newStreak, longest)
+
+  const { error: updateError } = await supabase
     .from('streaks')
-    .upsert(
-      {
-        user_id:           userId,
-        current_streak:    newStreak,
-        longest_streak:    Math.max(newStreak, longest),
-        last_session_date: today,
-      },
-      { onConflict: 'user_id' }             // key fix — tells Supabase which column to conflict on
-    )
-  if (streakError) throw streakError
+    .update({
+      current_streak:    newStreak,
+      longest_streak:    newLongest,
+      last_session_date: today,
+    })
+    .eq('user_id', userId)
 
-  return { newStreak }
+  if (updateError) console.error('Streak update error:', updateError)
 }
 
 export async function getStreak(userId) {

@@ -1,56 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 
 // ─── Word bank ────────────────────────────────────────────────────────────────
-const WORDS = [
-  // Easy
-  { word: 'abandon',    def: 'to leave someone or something behind permanently',         wrong: ['to follow closely', 'to improve slowly', 'to celebrate loudly'],             level: 'easy' },
-  { word: 'brief',      def: 'lasting only a short time',                                wrong: ['very loud', 'extremely heavy', 'brightly coloured'],                         level: 'easy' },
-  { word: 'curious',    def: 'eager to know or learn something',                         wrong: ['feeling very tired', 'very generous', 'afraid of strangers'],                 level: 'easy' },
-  { word: 'damage',     def: 'physical harm that reduces value or function',             wrong: ['a kind gift', 'a loud noise', 'a slow movement'],                            level: 'easy' },
-  { word: 'eager',      def: 'very keen or enthusiastic to do something',                wrong: ['slow and lazy', 'cold and distant', 'loud and rude'],                        level: 'easy' },
-  { word: 'fragile',    def: 'easily broken or damaged',                                 wrong: ['very strong', 'extremely heavy', 'very flexible'],                           level: 'easy' },
-  { word: 'generous',   def: 'willing to give more than is expected',                    wrong: ['very selfish', 'easily angered', 'always tired'],                            level: 'easy' },
-  { word: 'harsh',      def: 'unpleasantly rough or severe',                             wrong: ['very sweet', 'extremely quiet', 'very soft'],                                level: 'easy' },
-  { word: 'imitate',    def: 'to copy the actions or speech of someone',                 wrong: ['to destroy something', 'to move very fast', 'to stay very still'],           level: 'easy' },
-  { word: 'jealous',    def: 'feeling envious of someone else\'s advantages',            wrong: ['feeling very happy for others', 'feeling calm and relaxed', 'feeling proud'], level: 'easy' },
-
-  // Medium
-  { word: 'abundant',   def: 'existing in large quantities; more than enough',           wrong: ['extremely rare', 'slightly damaged', 'completely invisible'],                level: 'medium' },
-  { word: 'benevolent', def: 'well-meaning and kindly toward others',                    wrong: ['constantly angry', 'very secretive', 'easily frightened'],                   level: 'medium' },
-  { word: 'candid',     def: 'truthful and straightforward; frank',                      wrong: ['deliberately vague', 'overly formal', 'extremely shy'],                      level: 'medium' },
-  { word: 'diligent',   def: 'having or showing care and effort in work',                wrong: ['carelessly fast', 'stubbornly idle', 'openly dishonest'],                    level: 'medium' },
-  { word: 'eloquent',   def: 'fluent and persuasive in speaking or writing',             wrong: ['very quiet and shy', 'confused and forgetful', 'rude and aggressive'],       level: 'medium' },
-  { word: 'frugal',     def: 'sparing or economical with money or resources',            wrong: ['extremely wasteful', 'very loud', 'deeply emotional'],                       level: 'medium' },
-  { word: 'genuine',    def: 'truly what it is said to be; authentic',                   wrong: ['completely fake', 'somewhat boring', 'overly complicated'],                  level: 'medium' },
-  { word: 'hostile',    def: 'showing opposition or aggression; unfriendly',             wrong: ['very welcoming', 'quietly nervous', 'extremely helpful'],                    level: 'medium' },
-  { word: 'intricate',  def: 'very complex or detailed in design',                       wrong: ['very simple and plain', 'completely broken', 'very loud'],                   level: 'medium' },
-  { word: 'jovial',     def: 'cheerful and friendly in manner',                          wrong: ['deeply serious', 'always angry', 'frequently absent'],                       level: 'medium' },
-  { word: 'lament',     def: 'to express grief or sorrow about something',               wrong: ['to celebrate noisily', 'to argue loudly', 'to eat hungrily'],                level: 'medium' },
-  { word: 'meticulous', def: 'very careful and precise about details',                   wrong: ['extremely careless', 'very impatient', 'completely random'],                  level: 'medium' },
-
-  // Hard
-  { word: 'acquiesce',  def: 'to accept something reluctantly but without protest',      wrong: ['to refuse strongly', 'to explain in detail', 'to celebrate publicly'],       level: 'hard' },
-  { word: 'ambiguous',  def: 'open to more than one interpretation; unclear',            wrong: ['perfectly clear', 'very loud and obvious', 'completely finished'],           level: 'hard' },
-  { word: 'cacophony',  def: 'a harsh mixture of loud, discordant sounds',               wrong: ['a perfect musical harmony', 'a long period of silence', 'a gentle breeze'],  level: 'hard' },
-  { word: 'didactic',   def: 'intended to teach or give moral instruction',              wrong: ['meant purely for entertainment', 'completely meaningless', 'very destructive'], level: 'hard' },
-  { word: 'ephemeral',  def: 'lasting for a very short time; transitory',                wrong: ['lasting forever', 'very heavy and solid', 'extremely loud'],                  level: 'hard' },
-  { word: 'fastidious', def: 'very attentive to detail; difficult to please',            wrong: ['completely careless', 'very easy-going', 'extremely generous'],               level: 'hard' },
-  { word: 'garrulous',  def: 'excessively talkative, especially about trivial things',   wrong: ['very quiet and reserved', 'completely honest', 'deeply thoughtful'],          level: 'hard' },
-  { word: 'harbinger',  def: 'a person or thing that signals what is to come',           wrong: ['a final conclusion', 'a loud celebration', 'a sudden disappearance'],         level: 'hard' },
-  { word: 'insidious',  def: 'proceeding in a subtle but harmful way',                   wrong: ['openly helpful', 'very loud and obvious', 'completely harmless'],             level: 'hard' },
-  { word: 'juxtapose',  def: 'to place two things close together to highlight contrast', wrong: ['to destroy completely', 'to repeat endlessly', 'to hide carefully'],          level: 'hard' },
-  { word: 'laconic',    def: 'using very few words; brief to the point of seeming rude', wrong: ['speaking at great length', 'very emotionally expressive', 'always agreeable'], level: 'hard' },
-  { word: 'perfidious', def: 'guilty of betrayal; treacherous and untrustworthy',        wrong: ['completely loyal', 'openly generous', 'deeply religious'],                    level: 'hard' },
+const ALL_WORDS = [
+  { word: 'Abandon',    meaning: 'To leave someone or something behind permanently',     options: ['To follow closely',       'To leave behind permanently',   'To improve slowly',         'To celebrate loudly'] },
+  { word: 'Abundant',   meaning: 'Existing in large quantities; more than enough',       options: ['Extremely rare',           'Existing in large quantities',  'Slightly damaged',          'Completely invisible'] },
+  { word: 'Ambiguous',  meaning: 'Open to more than one interpretation; unclear',        options: ['Perfectly clear',          'Open to many interpretations',  'Very loud and obvious',     'Completely finished'] },
+  { word: 'Benevolent', meaning: 'Well-meaning and kindly toward others',               options: ['Constantly angry',         'Well-meaning and kind',         'Very secretive',            'Easily frightened'] },
+  { word: 'Candid',     meaning: 'Truthful and straightforward; frank',                  options: ['Deliberately vague',       'Truthful and straightforward',  'Overly formal',             'Extremely shy'] },
+  { word: 'Diligent',   meaning: 'Showing care and persistent effort in work',           options: ['Carelessly fast',          'Showing care and effort',       'Stubbornly idle',           'Openly dishonest'] },
+  { word: 'Eloquent',   meaning: 'Fluent and persuasive in speaking or writing',         options: ['Very quiet and shy',       'Fluent and persuasive',         'Confused and forgetful',    'Rude and aggressive'] },
+  { word: 'Ephemeral',  meaning: 'Lasting for only a very short time',                   options: ['Lasting forever',          'Lasting a very short time',     'Very heavy and solid',      'Extremely loud'] },
+  { word: 'Frugal',     meaning: 'Careful and economical with money or resources',       options: ['Extremely wasteful',       'Economical with money',         'Very emotional',            'Very loud'] },
+  { word: 'Garrulous',  meaning: 'Excessively talkative, especially on trivial matters', options: ['Very quiet and reserved',  'Excessively talkative',         'Completely honest',         'Deeply thoughtful'] },
+  { word: 'Harbinger',  meaning: 'Something that signals what is to come; an omen',     options: ['A final conclusion',       'A signal of things to come',    'A loud celebration',        'A sudden disappearance'] },
+  { word: 'Hostile',    meaning: 'Showing aggression or opposition; unfriendly',         options: ['Very welcoming',           'Showing aggression',            'Quietly nervous',           'Extremely helpful'] },
+  { word: 'Insidious',  meaning: 'Proceeding in a gradual and harmful way',             options: ['Openly helpful',           'Gradually and subtly harmful',  'Very obvious and loud',     'Completely harmless'] },
+  { word: 'Intricate',  meaning: 'Very complex or detailed in design or structure',      options: ['Very simple and plain',    'Complex and detailed',          'Completely broken',         'Very noisy'] },
+  { word: 'Jovial',     meaning: 'Cheerful and friendly in manner',                      options: ['Deeply serious',           'Cheerful and friendly',         'Always angry',              'Frequently absent'] },
+  { word: 'Laconic',    meaning: 'Using very few words; brief and concise',              options: ['Speaking at great length', 'Using very few words',          'Very emotional',            'Always agreeable'] },
+  { word: 'Lament',     meaning: 'To express grief or sorrow about something',           options: ['To celebrate noisily',     'To express grief or sorrow',    'To argue loudly',           'To eat hungrily'] },
+  { word: 'Meticulous', meaning: 'Very careful and precise about details',               options: ['Extremely careless',       'Very careful about details',    'Very impatient',            'Completely random'] },
+  { word: 'Perfidious', meaning: 'Guilty of betrayal; treacherous',                     options: ['Completely loyal',         'Guilty of betrayal',            'Openly generous',           'Deeply religious'] },
+  { word: 'Tenacious',  meaning: 'Holding firmly to a position; persistent and strong',  options: ['Easily giving up',         'Persistent and strong-willed',  'Very forgetful',            'Openly dishonest'] },
+  { word: 'Verbose',    meaning: 'Using more words than needed; long-winded',            options: ['Very brief and clear',     'Using too many words',          'Completely silent',         'Very precise'] },
+  { word: 'Wary',       meaning: 'Feeling cautious about possible dangers or problems',  options: ['Very trusting',            'Cautious about danger',         'Feeling overconfident',     'Deeply relaxed'] },
+  { word: 'Zealous',    meaning: 'Having great energy or enthusiasm for a cause',        options: ['Very indifferent',         'Full of enthusiasm',            'Easily bored',              'Quietly modest'] },
+  { word: 'Pragmatic',  meaning: 'Dealing with things sensibly and realistically',       options: ['Idealistic and dreamy',    'Sensible and realistic',        'Very emotional',            'Strictly traditional'] },
+  { word: 'Aloof',      meaning: 'Distant and not friendly; not involved',               options: ['Warm and approachable',    'Distant and not friendly',      'Very talkative',            'Extremely helpful'] },
+  { word: 'Concise',    meaning: 'Giving a lot of information clearly in few words',     options: ['Very long and detailed',   'Clear and using few words',     'Very confusing',            'Extremely vague'] },
+  { word: 'Resilient',  meaning: 'Able to recover quickly from difficulties',            options: ['Easily broken down',       'Recovering quickly from setbacks', 'Very rigid',             'Never changing'] },
+  { word: 'Subtle',     meaning: 'So delicate or precise as to be difficult to notice',  options: ['Very loud and obvious',    'Difficult to notice',           'Extremely heavy',           'Very straightforward'] },
+  { word: 'Empathy',    meaning: 'The ability to understand and share another\'s feelings', options: ['Lack of any emotion',   'Understanding others\' feelings', 'Strong physical ability',  'Hatred of others'] },
+  { word: 'Trivial',    meaning: 'Of little importance or value; insignificant',         options: ['Extremely important',      'Of little importance',          'Very complex',              'Very frightening'] },
 ]
 
-const LEVEL_CONFIG = {
-  all:    { label: '🌍 All',    color: '#6366f1' },
-  easy:   { label: '🌱 Easy',   color: '#10b981' },
-  medium: { label: '⚡ Medium', color: '#14b8a6' },
-  hard:   { label: '🔥 Hard',   color: '#ef4444' },
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function shuffle(arr) {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -60,327 +43,262 @@ function shuffle(arr) {
   return a
 }
 
-function buildQuestion(item) {
-  const options = shuffle([item.def, ...item.wrong])
-  return { word: item.word, correct: item.def, options, level: item.level }
-}
-
-function buildDeck(level, count = 10) {
-  const pool = level === 'all' ? WORDS : WORDS.filter(w => w.level === level)
-  return shuffle(pool).slice(0, count).map(buildQuestion)
+function pickQuestions(count = 8) {
+  return shuffle(ALL_WORDS).slice(0, count).map(w => ({
+    word:    w.word,
+    meaning: w.meaning,
+    options: shuffle(w.options),
+  }))
 }
 
 // ─── Result screen ─────────────────────────────────────────────────────────────
-function ResultScreen({ score, total, level, onRestart }) {
-  const pct      = Math.round((score / total) * 100)
-  const color    = pct >= 80 ? '#10b981' : pct >= 60 ? '#14b8a6' : pct >= 40 ? '#f59e0b' : '#ef4444'
-  const emoji    = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : pct >= 40 ? '📚' : '💪'
-  const message  = pct >= 80 ? 'Excellent vocabulary!' : pct >= 60 ? 'Good work!' : pct >= 40 ? 'Keep studying!' : 'Don\'t give up!'
+function ResultScreen({ score, total, onRestart }) {
+  const pct     = Math.round((score / total) * 100)
+  const color   = pct >= 80 ? '#10b981' : pct >= 60 ? '#14b8a6' : pct >= 40 ? '#f59e0b' : '#ef4444'
+  const emoji   = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : pct >= 40 ? '📚' : '💪'
+  const message = pct >= 80 ? 'Excellent vocabulary!' : pct >= 60 ? 'Good work, keep it up!' : pct >= 40 ? 'Keep studying!' : "Don't give up — try again!"
+
+  const circumference = 2 * Math.PI * 52
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, padding: '20px 0', animation: 'vqFadeUp 0.35s ease' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, animation: 'qFade 0.35s ease' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 56, marginBottom: 12 }}>{emoji}</div>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.4px' }}>
-          Quiz complete!
-        </h2>
+        <div style={{ fontSize: 52, marginBottom: 10 }}>{emoji}</div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.4px', margin: 0 }}>Quiz complete!</h2>
         <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 6 }}>{message}</p>
       </div>
 
-      {/* Score ring */}
-      <div style={{ position: 'relative', width: 140, height: 140 }}>
-        <svg viewBox="0 0 140 140" width="140" height="140">
-          <circle cx="70" cy="70" r="58" fill="none" stroke="var(--track)" strokeWidth="10"/>
-          <circle cx="70" cy="70" r="58" fill="none"
-            stroke={color} strokeWidth="10"
-            strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 58}`}
-            strokeDashoffset={`${2 * Math.PI * 58 * (1 - pct / 100)}`}
-            transform="rotate(-90 70 70)"
+      {/* Circular score */}
+      <div style={{ position: 'relative', width: 130, height: 130 }}>
+        <svg viewBox="0 0 120 120" width="130" height="130">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--track)" strokeWidth="9"/>
+          <circle cx="60" cy="60" r="52" fill="none"
+            stroke={color} strokeWidth="9" strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - pct / 100)}
+            transform="rotate(-90 60 60)"
             style={{ transition: 'stroke-dashoffset 1s ease' }}
           />
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 32, fontWeight: 800, color, lineHeight: 1 }}>{pct}%</span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{score}/{total} correct</span>
+          <span style={{ fontSize: 28, fontWeight: 800, color, lineHeight: 1 }}>{pct}%</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{score}/{total}</span>
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, width: '100%', maxWidth: 380 }}>
+      {/* Stat pills */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, width: '100%', maxWidth: 360 }}>
         {[
-          { icon: '✅', label: 'Correct',   value: score,         color: '#10b981' },
-          { icon: '❌', label: 'Wrong',     value: total - score, color: '#ef4444' },
-          { icon: '📊', label: 'Score',     value: `${pct}%`,     color },
+          { icon: '✅', label: 'Correct', value: score,         color: '#10b981' },
+          { icon: '❌', label: 'Wrong',   value: total - score, color: '#ef4444' },
+          { icon: '📊', label: 'Score',   value: `${pct}%`,     color },
         ].map((s, i) => (
-          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 12px', textAlign: 'center' }}>
-            <span style={{ fontSize: 20 }}>{s.icon}</span>
-            <div style={{ fontSize: 20, fontWeight: 800, color: s.color, marginTop: 4 }}>{s.value}</div>
+          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 10px', textAlign: 'center' }}>
+            <div style={{ fontSize: 20 }}>{s.icon}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: s.color, marginTop: 6 }}>{s.value}</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 10, width: '100%', maxWidth: 380 }}>
-        <button onClick={() => onRestart(level)} style={{
-          flex: 1, padding: '13px 0', borderRadius: 12, border: 'none',
-          background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
-          color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(20,184,166,0.25)',
-        }}>
-          🔄 Same level
-        </button>
-        <button onClick={() => onRestart('all')} style={{
-          flex: 1, padding: '13px 0', borderRadius: 12,
-          border: '1px solid var(--border)',
-          background: 'var(--bg-card)', color: 'var(--text-secondary)',
-          fontSize: 14, fontWeight: 600, cursor: 'pointer',
-        }}>
-          🌍 Mixed quiz
-        </button>
-      </div>
+      <button onClick={onRestart} style={{
+        width: '100%', maxWidth: 360, padding: '14px 0', borderRadius: 14, border: 'none',
+        background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+        color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+        boxShadow: '0 4px 20px rgba(20,184,166,0.3)',
+      }}>
+        🔄 Try another quiz
+      </button>
     </div>
   )
 }
 
-// ─── Main quiz ────────────────────────────────────────────────────────────────
+// ─── Quiz page ────────────────────────────────────────────────────────────────
 export function VocabQuizPage() {
-  const [level, setLevel]           = useState('medium')
-  const [deck, setDeck]             = useState(null)
-  const [qIndex, setQIndex]         = useState(0)
-  const [selected, setSelected]     = useState(null)   // index of chosen option
-  const [score, setScore]           = useState(0)
-  const [done, setDone]             = useState(false)
-  const [animKey, setAnimKey]       = useState(0)      // forces re-animation on new question
+  const [questions, setQuestions] = useState(null)
+  const [qIndex, setQIndex]       = useState(0)
+  const [selected, setSelected]   = useState(null)
+  const [score, setScore]         = useState(0)
+  const [done, setDone]           = useState(false)
 
-  const startQuiz = (lvl) => {
-    setLevel(lvl)
-    setDeck(buildDeck(lvl))
+  const TOTAL = 8
+
+  const startQuiz = () => {
+    setQuestions(pickQuestions(TOTAL))
     setQIndex(0)
     setSelected(null)
     setScore(0)
     setDone(false)
-    setAnimKey(k => k + 1)
   }
 
-  const question = deck?.[qIndex]
-  const total    = deck?.length ?? 10
-
-  const handleSelect = (idx) => {
+  const handleSelect = (opt) => {
     if (selected !== null) return
-    setSelected(idx)
-    if (question.options[idx] === question.correct) setScore(s => s + 1)
+    setSelected(opt)
+    if (opt === questions[qIndex].meaning) setScore(s => s + 1)
   }
 
   const handleNext = () => {
-    if (qIndex + 1 >= total) {
+    if (qIndex + 1 >= TOTAL) {
       setDone(true)
     } else {
       setQIndex(i => i + 1)
       setSelected(null)
-      setAnimKey(k => k + 1)
     }
   }
 
-  const levelColor = LEVEL_CONFIG[level]?.color ?? '#14b8a6'
+  const q = questions?.[qIndex]
 
-  return (
-    <div style={{ width: '100%', maxWidth: 560, margin: '0 auto', padding: '40px 20px 80px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-      {/* Header */}
-      <div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px', margin: 0 }}>
-          Vocabulary quiz
-        </h2>
-        <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
-          Read the word and pick the correct definition.
+  // ── Landing screen ──────────────────────────────────────────────────────────
+  if (!questions) return (
+    <div style={{ width: '100%', maxWidth: 520, margin: '0 auto', padding: '52px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 52, marginBottom: 12 }}>📝</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px', margin: 0 }}>Vocabulary quiz</h2>
+        <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.6 }}>
+          {TOTAL} words · multiple choice · see your score at the end.<br/>
+          Read each word and pick the correct definition.
         </p>
       </div>
 
-      {/* Level selector + start */}
-      {!deck && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, animation: 'vqFadeUp 0.3s ease' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-              Choose difficulty
-            </span>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-              {Object.entries(LEVEL_CONFIG).map(([key, cfg]) => (
-                <button key={key} onClick={() => setLevel(key)} style={{
-                  padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
-                  border: `2px solid ${level === key ? cfg.color : 'var(--border)'}`,
-                  background: level === key ? `${cfg.color}14` : 'var(--bg-card)',
-                  color: level === key ? cfg.color : 'var(--text-secondary)',
-                  fontSize: 14, fontWeight: 600, transition: 'all 0.15s', textAlign: 'left',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  <span style={{ fontSize: 18 }}>{cfg.label.split(' ')[0]}</span>
-                  <div>
-                    <div>{cfg.label.split(' ')[1]}</div>
-                    <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginTop: 1 }}>
-                      {key === 'all' ? 'Mixed levels' : key === 'easy' ? 'Common words' : key === 'medium' ? 'Intermediate' : 'Advanced'}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, width: '100%' }}>
+        {[
+          { icon: '📖', label: `${TOTAL} words`,         sub: 'per quiz' },
+          { icon: '🎯', label: '4 options',              sub: 'per question' },
+          { icon: '⏱️', label: '~3 minutes',             sub: 'to complete' },
+        ].map((c, i) => (
+          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 12px', textAlign: 'center' }}>
+            <div style={{ fontSize: 22 }}>{c.icon}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginTop: 6 }}>{c.label}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{c.sub}</div>
           </div>
+        ))}
+      </div>
 
-          <button onClick={() => startQuiz(level)} style={{
-            padding: '15px 0', borderRadius: 14, border: 'none',
-            background: `linear-gradient(135deg, ${LEVEL_CONFIG[level].color}, ${LEVEL_CONFIG[level].color}bb)`,
-            color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-            boxShadow: `0 6px 24px ${LEVEL_CONFIG[level].color}44`,
-            transition: 'all 0.2s',
-          }}>
-            Start 10-question quiz →
-          </button>
+      <button onClick={startQuiz} style={{
+        width: '100%', padding: '15px 0', borderRadius: 14, border: 'none',
+        background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+        color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+        boxShadow: '0 6px 24px rgba(20,184,166,0.3)',
+      }}>
+        Start quiz →
+      </button>
+    </div>
+  )
 
-          {/* Word count info */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['easy', 'medium', 'hard'].map(lvl => (
-              <div key={lvl} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 99, padding: '3px 12px' }}>
-                {WORDS.filter(w => w.level === lvl).length} {lvl} words
-              </div>
-            ))}
-          </div>
+  // ── Results ─────────────────────────────────────────────────────────────────
+  if (done) return (
+    <div style={{ width: '100%', maxWidth: 520, margin: '0 auto', padding: '52px 20px' }}>
+      <ResultScreen score={score} total={TOTAL} onRestart={startQuiz}/>
+    </div>
+  )
+
+  // ── Question ────────────────────────────────────────────────────────────────
+  const isCorrect   = (opt) => opt === q.meaning
+  const isSelected  = (opt) => opt === selected
+  const answered    = selected !== null
+  const gotItRight  = answered && isCorrect(selected)
+
+  return (
+    <div style={{ width: '100%', maxWidth: 520, margin: '0 auto', padding: '40px 20px 80px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+
+      {/* Progress */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>Question {qIndex + 1} of {TOTAL}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#10b981' }}>✅ {score} correct</span>
         </div>
-      )}
+        <div style={{ height: 5, background: 'var(--track)', borderRadius: 99, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', borderRadius: 99,
+            width: `${((qIndex + (answered ? 1 : 0)) / TOTAL) * 100}%`,
+            background: 'linear-gradient(90deg, #6366f1, #14b8a6)',
+            transition: 'width 0.35s ease',
+          }}/>
+        </div>
+      </div>
 
-      {/* Quiz in progress */}
-      {deck && !done && question && (
-        <div key={animKey} style={{ display: 'flex', flexDirection: 'column', gap: 20, animation: 'vqFadeUp 0.25s ease' }}>
+      {/* Word card */}
+      <div style={{
+        background: 'var(--bg-card)', border: '1px solid var(--border)',
+        borderRadius: 20, padding: '32px 24px', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>
+          What does this word mean?
+        </div>
+        <div style={{ fontSize: 40, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-1px' }}>
+          {q.word}
+        </div>
+      </div>
 
-          {/* Progress bar */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>
-                Question {qIndex + 1} of {total}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, color: '#10b981', fontWeight: 600 }}>✅ {score}</span>
-                <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>·</span>
-                <span style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>❌ {qIndex - (selected !== null ? 0 : 0) - score + (selected !== null && question.options[selected] !== question.correct ? 0 : 0)}</span>
-              </div>
-            </div>
-            <div style={{ height: 5, background: 'var(--track)', borderRadius: 99, overflow: 'hidden' }}>
-              <div style={{
-                height: '100%',
-                width: `${((qIndex + (selected !== null ? 1 : 0)) / total) * 100}%`,
-                background: `linear-gradient(90deg, ${levelColor}99, ${levelColor})`,
-                borderRadius: 99, transition: 'width 0.4s ease',
-              }}/>
-            </div>
-          </div>
+      {/* Options */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {q.options.map((opt, i) => {
+          const correct  = isCorrect(opt)
+          const picked   = isSelected(opt)
 
-          {/* Word + level badge */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '28px 24px', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-              <span style={{
-                fontSize: 10, fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.1em',
-                color: levelColor,
-                background: `${levelColor}18`,
-                padding: '3px 10px', borderRadius: 99,
-                border: `1px solid ${levelColor}33`,
-              }}>
-                {LEVEL_CONFIG[question.level]?.label}
-              </span>
-            </div>
-            <div style={{ fontSize: 36, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-1px', marginBottom: 4 }}>
-              {question.word}
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              What does this word mean?
-            </div>
-          </div>
+          let borderColor = 'var(--border)'
+          let bgColor     = 'var(--bg-card)'
+          let textColor   = 'var(--text-body)'
+          let icon        = null
 
-          {/* Options */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {question.options.map((opt, idx) => {
-              const isCorrect  = opt === question.correct
-              const isSelected = selected === idx
-              const revealed   = selected !== null
+          if (answered) {
+            if (correct)       { borderColor = 'rgba(16,185,129,0.5)'; bgColor = 'rgba(16,185,129,0.07)'; textColor = '#10b981'; icon = '✅' }
+            else if (picked)   { borderColor = 'rgba(239,68,68,0.5)';  bgColor = 'rgba(239,68,68,0.07)';  textColor = '#f87171'; icon = '❌' }
+          }
 
-              let bg     = 'var(--bg-card)'
-              let border = 'var(--border)'
-              let color  = 'var(--text-body)'
-              let icon   = null
-
-              if (revealed) {
-                if (isCorrect) {
-                  bg = 'rgba(16,185,129,0.08)'; border = 'rgba(16,185,129,0.4)'; color = '#10b981'; icon = '✅'
-                } else if (isSelected) {
-                  bg = 'rgba(239,68,68,0.08)'; border = 'rgba(239,68,68,0.4)'; color = '#f87171'; icon = '❌'
-                }
-              }
-
-              return (
-                <button key={idx} onClick={() => handleSelect(idx)} style={{
-                  width: '100%', textAlign: 'left',
-                  padding: '14px 18px', borderRadius: 14,
-                  background: bg, border: `1.5px solid ${border}`,
-                  color, fontSize: 14, lineHeight: 1.5,
-                  cursor: revealed ? 'default' : 'pointer',
-                  transition: 'all 0.18s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-                  fontWeight: revealed && isCorrect ? 600 : 400,
-                  transform: isSelected && revealed ? 'scale(1.01)' : 'scale(1)',
-                }}
-                  onMouseEnter={e => { if (!revealed) { e.currentTarget.style.borderColor = levelColor; e.currentTarget.style.background = `${levelColor}0d` } }}
-                  onMouseLeave={e => { if (!revealed) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-card)' } }}
-                >
-                  <span>{opt}</span>
-                  {icon && <span style={{ flexShrink: 0 }}>{icon}</span>}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Explanation after answer */}
-          {selected !== null && (
-            <div style={{ background: question.options[selected] === question.correct ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)', border: `1px solid ${question.options[selected] === question.correct ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 14, padding: '14px 18px', animation: 'vqFadeUp 0.2s ease' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: question.options[selected] === question.correct ? '#10b981' : '#f87171', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {question.options[selected] === question.correct ? '✅ Correct!' : '❌ Not quite'}
-              </div>
-              <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                <strong style={{ color: 'var(--text-primary)' }}>{question.word}</strong> means: {question.correct}
-              </p>
-            </div>
-          )}
-
-          {/* Next button */}
-          {selected !== null && (
-            <button onClick={handleNext} style={{
-              padding: '14px 0', borderRadius: 14, border: 'none',
-              background: `linear-gradient(135deg, ${levelColor}, ${levelColor}bb)`,
-              color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              boxShadow: `0 4px 20px ${levelColor}44`,
-              animation: 'vqFadeUp 0.2s ease',
-              transition: 'transform 0.1s',
+          return (
+            <button key={i} onClick={() => handleSelect(opt)} style={{
+              width: '100%', textAlign: 'left', padding: '14px 18px',
+              borderRadius: 14, border: `1.5px solid ${borderColor}`,
+              background: bgColor, color: textColor, fontSize: 14,
+              fontWeight: answered && correct ? 600 : 400,
+              cursor: answered ? 'default' : 'pointer',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+              transition: 'all 0.15s',
             }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              onMouseEnter={e => { if (!answered) { e.currentTarget.style.borderColor = '#14b8a6'; e.currentTarget.style.background = 'rgba(20,184,166,0.05)' } }}
+              onMouseLeave={e => { if (!answered) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-card)' } }}
             >
-              {qIndex + 1 >= total ? '🏁 See results' : 'Next question →'}
+              <span>{opt}</span>
+              {icon && <span style={{ flexShrink: 0, fontSize: 16 }}>{icon}</span>}
             </button>
-          )}
+          )
+        })}
+      </div>
+
+      {/* Feedback banner */}
+      {answered && (
+        <div style={{
+          background: gotItRight ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)',
+          border: `1px solid ${gotItRight ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
+          borderRadius: 14, padding: '14px 18px',
+          animation: 'qFade 0.2s ease',
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: gotItRight ? '#10b981' : '#f87171', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            {gotItRight ? '✅ Correct!' : '❌ Not quite'}
+          </div>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            <strong style={{ color: 'var(--text-primary)' }}>{q.word}</strong> means: {q.meaning}
+          </p>
         </div>
       )}
 
-      {/* Results */}
-      {done && (
-        <ResultScreen
-          score={score}
-          total={total}
-          level={level}
-          onRestart={(lvl) => startQuiz(lvl)}
-        />
+      {/* Next button */}
+      {answered && (
+        <button onClick={handleNext} style={{
+          width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
+          background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+          color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+          boxShadow: '0 4px 20px rgba(20,184,166,0.3)',
+          animation: 'qFade 0.2s ease',
+        }}>
+          {qIndex + 1 >= TOTAL ? '🏁 See results' : 'Next question →'}
+        </button>
       )}
 
       <style>{`
-        @keyframes vqFadeUp {
-          from { opacity: 0; transform: translateY(12px); }
+        @keyframes qFade {
+          from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
