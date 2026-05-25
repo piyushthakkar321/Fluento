@@ -163,25 +163,25 @@ export function VocabQuizPage() {
       </div>
 
       {/* Category badges */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', width: '100%', padding: '0 4px' }}>
         {Object.entries(CATEGORY_CONFIG).map(([name, cfg]) => (
-          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 99, background: cfg.bg, border: `1px solid ${cfg.color}33` }}>
-            <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: cfg.color }}>{name}</span>
+          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 99, background: cfg.bg, border: `1px solid ${cfg.color}33`, flexShrink: 0 }}>
+            <span style={{ fontSize: 13 }}>{cfg.emoji}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: cfg.color }}>{name}</span>
           </div>
         ))}
       </div>
 
       {/* Quick stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, width: '100%' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, width: '100%' }}>
         {[
           { icon: '📖', label: `${TOTAL} words`,   sub: 'per quiz' },
           { icon: '🎯', label: '4 choices',         sub: 'per word' },
           { icon: '⏱️', label: '~3 min',            sub: 'to finish' },
         ].map((c, i) => (
-          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 12px', textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
-            <div style={{ fontSize: 24, marginBottom: 6 }}>{c.icon}</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{c.label}</div>
+          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '14px 8px', textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
+            <div style={{ fontSize: 22, marginBottom: 4 }}>{c.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{c.label}</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{c.sub}</div>
           </div>
         ))}

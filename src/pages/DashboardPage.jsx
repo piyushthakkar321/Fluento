@@ -232,7 +232,7 @@ export function DashboardPage({ onNavigateToPractice }) {
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
         <StatCard label="Total sessions" value={sessions.length}                    icon="💬"/>
         <StatCard label="Current streak" value={`${streak?.current_streak ?? 0}d`}  icon="🔥" highlight={(streak?.current_streak ?? 0) >= 3}/>
         <StatCard label="Longest streak" value={`${streak?.longest_streak ?? 0}d`}  icon="🏆"/>
@@ -366,13 +366,13 @@ function StatCard({ label, value, icon, highlight = false, accent = null }) {
     <div style={{
       background: 'var(--bg-card)',
       border: `1px solid ${highlight ? 'rgba(234,88,12,0.22)' : 'var(--border)'}`,
-      borderRadius: 16, padding: '16px 12px',
-      display: 'flex', flexDirection: 'column', gap: 6,
+      borderRadius: 16, padding: '14px 8px',
+      display: 'flex', flexDirection: 'column', gap: 4,
       boxShadow: 'var(--shadow-card)',
     }}>
-      <span style={{ fontSize: 20 }}>{icon}</span>
-      <span style={{ fontSize: 24, fontWeight: 800, color: valueColor, letterSpacing: '-0.5px' }}>{value}</span>
-      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+      <span style={{ fontSize: 18 }}>{icon}</span>
+      <span style={{ fontSize: 20, fontWeight: 800, color: valueColor, letterSpacing: '-0.5px' }}>{value}</span>
+      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{label}</span>
     </div>
   )
 }

@@ -234,61 +234,71 @@ function Root() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Top header — logo + streak + theme + signout */}
       <nav style={{
         background: 'var(--bg-nav)',
         backdropFilter: 'blur(22px)',
         WebkitBackdropFilter: 'blur(22px)',
         borderBottom: '1px solid var(--border)',
-        padding: '0 24px',
-        display: 'flex', alignItems: 'center', gap: 2,
+        padding: '0 16px',
+        display: 'flex', alignItems: 'center',
+        height: 52,
         position: 'sticky', top: 0, zIndex: 100,
         transition: 'background 0.3s ease',
       }}>
-        {/* Logo */}
         <span style={{
           fontWeight: 800, fontSize: 18,
-          marginRight: 18, padding: '16px 0',
           background: 'linear-gradient(135deg, #14b8a6, #6366f1)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           letterSpacing: '-0.5px', flexShrink: 0,
         }}>Fluento</span>
 
-        {/* Tabs */}
-        {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} style={{
-            padding: '0 14px', height: 56,
-            background: 'none', border: 'none',
-            borderBottom: `2.5px solid ${tab === t.key ? 'var(--nav-active)' : 'transparent'}`,
-            cursor: 'pointer', fontSize: 13,
-            fontWeight: tab === t.key ? 700 : 500,
-            color: tab === t.key ? 'var(--nav-active)' : 'var(--nav-text)',
-            transition: 'color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease',
-            opacity: tab === t.key ? 1 : 0.75,
-            whiteSpace: 'nowrap', letterSpacing: '-0.01em',
-          }}>{t.label}</button>
-        ))}
-
-        {/* Right side */}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
           <StreakBadge key={streakKey} userId={user.id}/>
           <ThemeToggle/>
           <button onClick={signOut} style={{
             background: 'transparent',
             border: '1px solid var(--border)',
-            borderRadius: 9, padding: '7px 14px',
+            borderRadius: 9, padding: '6px 12px',
             fontSize: 13, color: 'var(--text-muted)',
-            cursor: 'pointer', transition: 'all 0.2s ease',
-            fontWeight: 500,
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-          >Sign out</button>
+            cursor: 'pointer', fontWeight: 500,
+            whiteSpace: 'nowrap',
+          }}>Sign out</button>
         </div>
       </nav>
 
-      {tab === 'tutor'     && <TutorPage onSessionSaved={() => setStreakKey(k => k + 1)}/>}
-      {tab === 'dashboard' && <DashboardPage/>}
-      {tab === 'quiz'      && <VocabQuizPage/>}
+      {/* Page content */}
+      <div style={{ flex: 1, paddingBottom: 64 }}>
+        {tab === 'tutor'     && <TutorPage onSessionSaved={() => setStreakKey(k => k + 1)}/>}
+        {tab === 'dashboard' && <DashboardPage onNavigateToPractice={() => setTab('tutor')}/>}
+        {tab === 'quiz'      && <VocabQuizPage/>}
+      </div>
+
+      {/* Bottom tab bar */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+        background: 'var(--bg-nav)',
+        backdropFilter: 'blur(22px)',
+        WebkitBackdropFilter: 'blur(22px)',
+        borderTop: '1px solid var(--border)',
+        display: 'flex',
+        height: 64,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}>
+        {TABS.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)} style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 3,
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: tab === t.key ? 'var(--nav-active)' : 'var(--text-muted)',
+            transition: 'color 0.2s ease',
+            padding: '8px 0',
+          }}>
+            <t.Icon/>
+            <span style={{ fontSize: 11, fontWeight: tab === t.key ? 700 : 500 }}>{t.label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
