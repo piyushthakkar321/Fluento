@@ -43,7 +43,7 @@ export function useVoiceRecorder({ onTranscript, onError }) {
     const form = new FormData()
     form.append('file', blob, 'audio.webm')
     form.append('model', 'whisper-large-v3')
-    form.append('language', 'en')
+    form.append('task', 'translate')
     form.append('response_format', 'json')
 
     try {
