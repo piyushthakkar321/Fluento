@@ -258,14 +258,7 @@ function Root() {
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
           <StreakBadge key={streakKey} userId={user.id}/>
           <ThemeToggle/>
-          <button onClick={signOut} style={{
-            background: 'transparent',
-            border: '1px solid var(--border)',
-            borderRadius: 9, padding: '6px 12px',
-            fontSize: 13, color: 'var(--text-muted)',
-            cursor: 'pointer', fontWeight: 500,
-            whiteSpace: 'nowrap',
-          }}>Sign out</button>
+          <ProfileButton user={user}/>
         </div>
       </nav>
 
