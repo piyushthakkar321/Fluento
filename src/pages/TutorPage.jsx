@@ -269,7 +269,7 @@ export function TutorPage({ onSessionSaved, streakKey, userName }) {
     // Optimistically add user turn
     setTurns(prev => [...prev, { userText: text, aiReply: null, corrections: [], score: null }])
     try {
-      const result = await getTutorResponse(text, history, difficulty)
+      const result = await getTutorResponse(text, history, difficulty, user?.id)
       // Fill in AI reply on the last turn
       setTurns(prev => [
         ...prev.slice(0, -1),

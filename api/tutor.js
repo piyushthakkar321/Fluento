@@ -36,10 +36,44 @@ If no mistakes, return an empty corrections array.
 Always sound like a helpful, encouraging friend.`
 }
 
+// ── In-memory rate limiting ───────────────────────────────────────────────────
+const userHits = new Map()   // userId  → { count, resetAt }
+const ipHits   = new Map()   // ip      → { count, resetAt }
+
+const USER_LIMIT = 20
+const IP_LIMIT   = 50
+const WINDOW_MS  = 60 * 60 * 1000   // 1 hour
+
+function checkLimit(map, key, limit) {
+  const now  = Date.now()
+  const entry = map.get(key)
+
+  if (!entry || now > entry.resetAt) {
+    map.set(key, { count: 1, resetAt: now + WINDOW_MS })
+    return false   // not limited
+  }
+
+  entry.count++
+  if (entry.count > limit) return true   // limited
+
+  return false
+}
+
 export default async function handler(req, res) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // ── Rate limiting ─────────────────────────────────────────────────────────
+  const ip     = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim()
+  const userId = req.body?.userId || null
+
+  if (checkLimit(ipHits, ip, IP_LIMIT)) {
+    return res.status(429).json({ error: 'You have reached your hourly limit. Please try again later.' })
+  }
+  if (userId && checkLimit(userHits, userId, USER_LIMIT)) {
+    return res.status(429).json({ error: 'You have reached your hourly limit. Please try again later.' })
   }
 
   const { message, history = [], difficulty = 'medium' } = req.body
