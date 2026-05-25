@@ -230,7 +230,9 @@ function Root() {
   const [tab, setTab]             = useState('tutor')
   const [streakKey, setStreakKey] = useState(0)
 
+  const userName = user?.user_metadata?.name
   if (!user) return <AuthForm/>
+  if (!userName) return <NameSetupScreen/>
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -269,7 +271,7 @@ function Root() {
 
       {/* Page content */}
       <div style={{ flex: 1, paddingBottom: 64 }}>
-        {tab === 'tutor'     && <TutorPage onSessionSaved={() => setStreakKey(k => k + 1)}/>}
+        {tab === 'tutor' && <TutorPage onSessionSaved={() => setStreakKey(k => k + 1)} userName={userName}/>}
         {tab === 'dashboard' && <DashboardPage onNavigateToPractice={() => setTab('tutor')}/>}
         {tab === 'quiz'      && <VocabQuizPage/>}
       </div>
