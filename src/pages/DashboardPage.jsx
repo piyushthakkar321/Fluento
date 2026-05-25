@@ -5,7 +5,6 @@ import {
 } from 'recharts'
 import { getStreak, getRecentSessions } from '../lib/sessionApi'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
 
 // ─── Share modal ───────────────────────────────────────────────────────────────
 function ShareModal({ sessions, streak, onClose }) {
@@ -100,6 +99,28 @@ function ShareModal({ sessions, streak, onClose }) {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function calcXP(sessions) {
+  return sessions.reduce((total, s) => {
+    const bonus = s.score >= 90 ? 10 : s.score >= 80 ? 5 : s.score >= 70 ? 3 : 0
+    return total + 10 + bonus
+  }, 0)
+}
+
+function getCEFR(avg) {
+  if (avg >= 87) return { level: 'C2', label: 'Mastery',      color: '#6366f1' }
+  if (avg >= 75) return { level: 'C1', label: 'Advanced',     color: '#8b5cf6' }
+  if (avg >= 63) return { level: 'B2', label: 'Upper-Inter.', color: '#14b8a6' }
+  if (avg >= 51) return { level: 'B1', label: 'Intermediate', color: '#10b981' }
+  if (avg >= 36) return { level: 'A2', label: 'Elementary',   color: '#f59e0b' }
+  return               { level: 'A1', label: 'Beginner',      color: '#ef4444' }
+}
+
+function getWeeklyCount(sessions) {
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+  return sessions.filter(s => new Date(s.created_at).getTime() > weekAgo).length
+}
+
 function EmptyState({ onNavigateToPractice }) {
   return (
     <div style={{ padding: '40px 24px 32px', textAlign: 'center' }}>
@@ -153,9 +174,7 @@ export function DashboardPage({ onNavigateToPractice }) {
   const [sessions, setSessions]   = useState([])
   const [loading, setLoading]     = useState(true)
   const [showShare, setShowShare] = useState(false)
-  const { theme, toggle: toggleTheme } = useTheme()
-  const { signOut } = useAuth()
-
+  
   useEffect(() => {
     if (!user) return
     Promise.all([getStreak(user.id), getRecentSessions(user.id, 20)])
@@ -172,10 +191,15 @@ export function DashboardPage({ onNavigateToPractice }) {
       date: new Date(s.created_at).toLocaleDateString('en', { month: 'short', day: 'numeric' }),
     }))
 
-  const avgScore = sessions.length
+  const avgScore    = sessions.length
     ? Math.round(sessions.reduce((s, x) => s + x.score, 0) / sessions.length)
     : 0
-  const avgColor = avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#14b8a6' : '#f59e0b'
+  const avgColor    = avgScore >= 80 ? '#10b981' : avgScore >= 60 ? '#14b8a6' : '#f59e0b'
+  const totalXP     = calcXP(sessions)
+  const cefr        = sessions.length ? getCEFR(avgScore) : null
+  const weeklyCount = getWeeklyCount(sessions)
+  const WEEKLY_GOAL = 5
+  const speakMins   = sessions.length * 2
 
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: 80, color: 'var(--text-muted)', fontSize: 14 }}>Loading…</div>
@@ -187,28 +211,15 @@ export function DashboardPage({ onNavigateToPractice }) {
       {showShare && <ShareModal sessions={sessions} streak={streak} onClose={() => setShowShare(false)}/>}
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+      <div style={{ marginBottom: 4 }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.4px' }}>Your progress</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Theme toggle */}
-          <button onClick={toggleTheme} style={{
-            width: 38, height: 38, borderRadius: 10, border: '1px solid var(--border)',
-            background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16,
-          }}>
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
-          {/* Sign out */}
-          <button onClick={signOut} style={{
-            height: 38, padding: '0 14px', borderRadius: 10, border: '1px solid var(--border)',
-            background: 'var(--bg-card)', fontSize: 13, fontWeight: 600,
-            color: 'var(--text-muted)', cursor: 'pointer',
-          }}>Sign out</button>
-        </div>
+        <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>Keep practising daily to improve.</p>
       </div>
 
       {/* Empty state */}
-      {!loading && sessions.length === 0 && <EmptyState onNavigateToPractice={onNavigateToPractice}/>}
+      {!loading && sessions.length === 0 && (
+        <EmptyState onNavigateToPractice={onNavigateToPractice}/>
+      )}
 
       {sessions.length > 0 && (
         <button onClick={() => setShowShare(true)} style={{
@@ -349,28 +360,22 @@ export function DashboardPage({ onNavigateToPractice }) {
   )
 }
 
-function StatCard({ label, value, icon, highlight = false }) {
+function StatCard({ label, value, icon, highlight = false, accent = null }) {
+  const valueColor = highlight ? '#fb923c' : accent ?? 'var(--text-primary)'
   return (
     <div style={{
-      background: highlight
-        ? 'linear-gradient(145deg, rgba(234,88,12,0.09) 0%, rgba(234,88,12,0.04) 100%)'
-        : 'linear-gradient(145deg, var(--bg-card) 0%, rgba(20,184,166,0.03) 100%)',
+      background: 'var(--bg-card)',
       border: `1px solid ${highlight ? 'rgba(234,88,12,0.22)' : 'var(--border)'}`,
-      borderRadius: 18, padding: '20px 18px',
-      display: 'flex', flexDirection: 'column', gap: 8,
+      borderRadius: 16, padding: '16px 12px',
+      display: 'flex', flexDirection: 'column', gap: 6,
       boxShadow: 'var(--shadow-card)',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-    }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)' }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)' }}
-    >
-      <span style={{ fontSize: 22 }}>{icon}</span>
-      <span style={{ fontSize: 26, fontWeight: 800, color: highlight ? '#fb923c' : 'var(--text-primary)', letterSpacing: '-0.5px' }}>{value}</span>
-      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{label}</span>
+    }}>
+      <span style={{ fontSize: 20 }}>{icon}</span>
+      <span style={{ fontSize: 24, fontWeight: 800, color: valueColor, letterSpacing: '-0.5px' }}>{value}</span>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
     </div>
   )
 }
-
 function ScorePill({ score }) {
   const [bg, color] =
     score >= 80 ? ['rgba(16,185,129,0.1)', '#10b981']
