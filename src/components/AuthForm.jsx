@@ -71,7 +71,11 @@ export function AuthForm() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-base)', transition: 'background 0.3s ease' }}>
       <style>{`
-        @media (max-width: 820px) { .fl-auth-left { display: none !important; } .fl-auth-right { flex: 1 !important; } }
+        @media (max-width: 820px) {
+          .fl-auth-left { display: none !important; }
+          .fl-auth-right { flex: 1 !important; align-items: flex-start !important; padding-top: 48px !important; }
+          .fl-auth-logo { display: flex !important; }
+        }
         .fl-input:focus { border-color: #14b8a6 !important; box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important; }
       `}</style>
 
@@ -120,11 +124,18 @@ export function AuthForm() {
       {/* ── Right form panel ── */}
       <div className="fl-auth-right" style={{
         flex: '0 0 56%',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '48px 40px',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        padding: '48px 24px',
         background: 'var(--bg-base)', transition: 'background 0.3s ease',
+        overflowY: 'auto',
       }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
+
+          {/* Mobile-only logo */}
+          <div className="fl-auth-logo" style={{ display: 'none', alignItems: 'center', gap: 8, marginBottom: 28 }}>
+            <span style={{ fontSize: 24 }}>🗣️</span>
+            <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', background: 'linear-gradient(135deg, #14b8a6, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Fluento</span>
+          </div>
 
           {/* Heading */}
           <div style={{ marginBottom: 32 }}>
