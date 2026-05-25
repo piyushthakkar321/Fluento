@@ -172,7 +172,7 @@ function ProfileButton({ user }) {
           <div style={{
             position: 'absolute', top: 'calc(100% + 10px)', right: 0,
             background: 'var(--bg-card)', border: '1px solid var(--border)',
-            borderRadius: 18, padding: 8, minWidth: 210, zIndex: 150,
+            borderRadius: 18, padding: 8, minWidth: 210, zIndex: 999,
             boxShadow: '0 12px 40px rgba(0,0,0,0.22)',
           }}>
             {/* User info */}
@@ -247,6 +247,7 @@ function Root() {
         height: 52,
         position: 'sticky', top: 0, zIndex: 100,
         transition: 'background 0.3s ease',
+        overflow: 'visible',
       }}>
         <span style={{
           fontWeight: 800, fontSize: 18,
