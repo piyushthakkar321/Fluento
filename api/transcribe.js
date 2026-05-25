@@ -8,7 +8,7 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const groqKey = process.env.GROQ_KEY
+  const groqKey = process.env.GROQ_API_KEY
   if (!groqKey) return res.status(500).json({ error: 'GROQ_KEY not configured' })
 
   try {
