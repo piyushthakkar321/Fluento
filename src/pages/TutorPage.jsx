@@ -11,6 +11,17 @@ function useTTS() {
   const [muted, setMuted]   = useState(false)
   const [active, setActive] = useState(false)
   const uttRef              = useRef(null)
+  const unlockedRef         = useRef(false)
+
+  // iOS requires a silent utterance fired inside a user gesture
+  // to unlock speechSynthesis for subsequent auto-play
+  const unlock = () => {
+    if (unlockedRef.current || !window.speechSynthesis) return
+    const silent = new SpeechSynthesisUtterance('')
+    silent.volume = 0
+    window.speechSynthesis.speak(silent)
+    unlockedRef.current = true
+  }
 
   const speak = (text) => {
     if (muted || !window.speechSynthesis) return
@@ -27,7 +38,7 @@ function useTTS() {
 
   const stop = () => { window.speechSynthesis?.cancel(); setActive(false) }
   useEffect(() => () => window.speechSynthesis?.cancel(), [])
-  return { speak, stop, muted, active, toggleMute: () => { stop(); setMuted(m => !m) } }
+  return { speak, stop, muted, active, unlock, toggleMute: () => { stop(); setMuted(m => !m) } }
 }
 
 // ── Topic chips ───────────────────────────────────────────────────────────────
@@ -496,7 +507,7 @@ export function TutorPage({ onSessionSaved, streakKey, userName }) {
 
           {/* Main mic button */}
           <button
-            onClick={toggle}
+            onClick={() => { tts.unlock(); toggle() }}
             disabled={isTranscribing}
             aria-label={isRecording ? 'Stop recording' : 'Start recording'}
             style={{
