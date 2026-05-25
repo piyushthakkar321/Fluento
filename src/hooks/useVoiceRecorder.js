@@ -47,14 +47,10 @@ export function useVoiceRecorder({ onTranscript, onError }) {
     form.append('response_format', 'json')
 
     try {
-      const res = await fetch(
-        'https://api.groq.com/openai/v1/audio/transcriptions',
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${import.meta.env.VITE_GROQ_KEY}` },
-          body: form,
-        }
-      )
+      const res = await fetch('/api/transcribe', {
+  method: 'POST',
+  body: form,
+})
       if (!res.ok) throw new Error(await res.text())
       const { text } = await res.json()
       onTranscript?.(text.trim())
