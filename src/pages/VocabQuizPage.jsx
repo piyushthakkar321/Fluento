@@ -1,37 +1,73 @@
 import { useState, useMemo } from 'react'
 
-// ── Word bank with categories ─────────────────────────────────────────────────
 const ALL_WORDS = [
-  { word: 'Abandon',    meaning: 'To leave someone or something behind permanently',     options: ['To follow closely',       'To leave behind permanently',      'To improve gradually',       'To celebrate loudly'],       category: 'Daily Life' },
-  { word: 'Abundant',   meaning: 'Existing in large quantities; more than enough',       options: ['Extremely rare',           'Existing in large quantities',     'Slightly damaged',           'Completely invisible'],       category: 'Academic'  },
-  { word: 'Ambiguous',  meaning: 'Open to more than one interpretation; unclear',        options: ['Perfectly clear',          'Open to many interpretations',     'Very loud and obvious',      'Completely finished'],        category: 'Workplace' },
-  { word: 'Benevolent', meaning: 'Well-meaning and kindly toward others',                options: ['Constantly angry',         'Well-meaning and kind',            'Very secretive',             'Easily frightened'],          category: 'Social'    },
-  { word: 'Candid',     meaning: 'Truthful and straightforward; frank',                  options: ['Deliberately vague',       'Truthful and straightforward',     'Overly formal',              'Extremely shy'],              category: 'Social'    },
-  { word: 'Diligent',   meaning: 'Showing care and persistent effort in work',           options: ['Carelessly fast',          'Showing care and effort',          'Stubbornly idle',            'Openly dishonest'],           category: 'Workplace' },
-  { word: 'Eloquent',   meaning: 'Fluent and persuasive in speaking or writing',         options: ['Very quiet and shy',       'Fluent and persuasive',            'Confused and forgetful',     'Rude and aggressive'],        category: 'Workplace' },
-  { word: 'Ephemeral',  meaning: 'Lasting for only a very short time',                   options: ['Lasting forever',          'Lasting a very short time',        'Very heavy and solid',       'Extremely loud'],             category: 'Academic'  },
-  { word: 'Frugal',     meaning: 'Careful and economical with money or resources',       options: ['Extremely wasteful',       'Economical with money',            'Very emotional',             'Very loud'],                  category: 'Daily Life'},
-  { word: 'Garrulous',  meaning: 'Excessively talkative, especially on trivial matters', options: ['Very quiet and reserved',  'Excessively talkative',            'Completely honest',          'Deeply thoughtful'],          category: 'Social'    },
-  { word: 'Harbinger',  meaning: 'A sign or warning that something is to come',          options: ['A final conclusion',       'A sign of things to come',         'A loud celebration',         'A sudden disappearance'],     category: 'Academic'  },
-  { word: 'Hostile',    meaning: 'Showing aggression or opposition; unfriendly',         options: ['Very welcoming',           'Showing aggression',               'Quietly nervous',            'Extremely helpful'],          category: 'Social'    },
-  { word: 'Insidious',  meaning: 'Proceeding in a gradual, harmful, and subtle way',     options: ['Openly helpful',           'Gradually and subtly harmful',     'Very obvious and loud',      'Completely harmless'],        category: 'Academic'  },
-  { word: 'Intricate',  meaning: 'Very complex or detailed in design or structure',      options: ['Very simple and plain',    'Complex and detailed',             'Completely broken',          'Very noisy'],                 category: 'Workplace' },
-  { word: 'Jovial',     meaning: 'Cheerful and friendly in manner',                      options: ['Deeply serious',           'Cheerful and friendly',            'Always angry',               'Frequently absent'],          category: 'Social'    },
-  { word: 'Laconic',    meaning: 'Using very few words; brief and to the point',         options: ['Speaking at great length', 'Using very few words',             'Very emotional',             'Always agreeable'],           category: 'Workplace' },
-  { word: 'Lament',     meaning: 'To express grief or sorrow about something',           options: ['To celebrate noisily',     'To express grief or sorrow',       'To argue loudly',            'To eat hungrily'],            category: 'Daily Life'},
-  { word: 'Meticulous', meaning: 'Very careful and precise about every detail',          options: ['Extremely careless',       'Very careful about details',       'Very impatient',             'Completely random'],          category: 'Workplace' },
-  { word: 'Nomadic',    meaning: 'Moving from place to place without a permanent home',  options: ['Settled and stationary',   'Moving without a fixed home',      'Very fast-moving',           'Extremely social'],           category: 'Travel'    },
-  { word: 'Itinerary',  meaning: 'A planned route or schedule for a journey',            options: ['A type of luggage',        'A planned journey route',          'A travel insurance policy',  'A foreign currency'],         category: 'Travel'    },
-  { word: 'Layover',    meaning: 'A break in a journey, especially at an airport',       options: ['Extra luggage fees',       'A stop during a journey',          'A missed connection',        'A travel document'],          category: 'Travel'    },
-  { word: 'Customs',    meaning: 'The official process of checking goods at a border',   options: ['Local traditions only',    'Border goods inspection process',  'A travel tax',               'A type of visa'],             category: 'Travel'    },
-  { word: 'Resilient',  meaning: 'Able to recover quickly from difficulties',            options: ['Easily broken down',       'Recovering quickly from setbacks', 'Very rigid',                 'Never changing'],             category: 'Daily Life'},
-  { word: 'Empathy',    meaning: "Understanding and sharing another person's feelings",  options: ['Lack of any emotion',      "Understanding others' feelings",   'Strong physical ability',    'Hatred of others'],           category: 'Social'    },
-  { word: 'Pragmatic',  meaning: 'Dealing with problems in a practical and realistic way',options: ['Idealistic and dreamy',   'Sensible and realistic',           'Very emotional',             'Strictly traditional'],       category: 'Workplace' },
-  { word: 'Tenacious',  meaning: 'Holding firmly to something; very persistent',         options: ['Easily giving up',         'Persistent and strong-willed',     'Very forgetful',             'Openly dishonest'],           category: 'Workplace' },
-  { word: 'Verbose',    meaning: 'Using more words than needed; long-winded',            options: ['Very brief and clear',     'Using too many words',             'Completely silent',          'Very precise'],               category: 'Workplace' },
-  { word: 'Zealous',    meaning: 'Having great energy or enthusiasm for a cause',        options: ['Very indifferent',         'Full of enthusiasm',               'Easily bored',               'Quietly modest'],             category: 'Social'    },
-  { word: 'Subtle',     meaning: 'So delicate or precise as to be difficult to notice',  options: ['Very loud and obvious',    'Difficult to notice',              'Extremely heavy',            'Very straightforward'],       category: 'Daily Life'},
-  { word: 'Trivial',    meaning: 'Of little importance or value; insignificant',         options: ['Extremely important',      'Of little importance',             'Very complex',               'Very frightening'],           category: 'Daily Life'},
+  // ── Daily Life ──────────────────────────────────────────────────────────────
+  { word: 'Abandon',       meaning: 'To leave someone or something behind permanently',                    options: ['To follow closely',                                        'To leave someone or something behind permanently',                    'To improve gradually',                                               'To celebrate loudly'],                          category: 'Daily Life' },
+  { word: 'Frugal',        meaning: 'Careful and economical with money or resources',                      options: ['Extremely wasteful',                                       'Careful and economical with money or resources',                      'Very emotional',                                                     'Very loud'],                                    category: 'Daily Life' },
+  { word: 'Lament',        meaning: 'To express grief or sorrow about something',                          options: ['To celebrate noisily',                                     'To express grief or sorrow about something',                          'To argue loudly',                                                    'To eat hungrily'],                              category: 'Daily Life' },
+  { word: 'Resilient',     meaning: 'Able to recover quickly from difficulties',                           options: ['Easily broken down',                                       'Able to recover quickly from difficulties',                           'Very rigid',                                                         'Never changing'],                               category: 'Daily Life' },
+  { word: 'Subtle',        meaning: 'So delicate or precise as to be difficult to notice',                 options: ['Very loud and obvious',                                    'So delicate or precise as to be difficult to notice',                 'Extremely heavy',                                                    'Very straightforward'],                         category: 'Daily Life' },
+  { word: 'Trivial',       meaning: 'Of little importance or value; insignificant',                        options: ['Extremely important',                                      'Of little importance or value; insignificant',                        'Very complex',                                                       'Very frightening'],                             category: 'Daily Life' },
+  { word: 'Procrastinate', meaning: 'To delay or postpone doing something',                               options: ['To act immediately',                                       'To delay or postpone doing something',                                'To work very hard',                                                  'To forget completely'],                         category: 'Daily Life' },
+  { word: 'Spontaneous',   meaning: 'Done naturally without planning or thought',                          options: ['Carefully planned',                                        'Done naturally without planning or thought',                          'Very slow and deliberate',                                           'Forced and unnatural'],                         category: 'Daily Life' },
+  { word: 'Mundane',       meaning: 'Lacking interest or excitement; routine',                             options: ['Exciting and unusual',                                     'Lacking interest or excitement; routine',                             'Very dangerous',                                                     'Extremely creative'],                           category: 'Daily Life' },
+  { word: 'Thrifty',       meaning: 'Using money and resources carefully and without waste',               options: ['Spending money freely',                                    'Using money and resources carefully and without waste',               'Very generous',                                                      'Completely broke'],                             category: 'Daily Life' },
+  { word: 'Serene',        meaning: 'Calm, peaceful, and untroubled',                                     options: ['Loud and chaotic',                                         'Calm, peaceful, and untroubled',                                      'Very angry',                                                         'Deeply sad'],                                   category: 'Daily Life' },
+  { word: 'Versatile',     meaning: 'Able to adapt or be used in many different ways',                    options: ['Limited to one purpose only',                              'Able to adapt or be used in many different ways',                     'Very slow to change',                                                'Completely unreliable'],                        category: 'Daily Life' },
+  { word: 'Pessimistic',   meaning: 'Tending to see the worst aspect of things',                          options: ['Always expecting the best',                                'Tending to see the worst aspect of things',                           'Completely indifferent',                                             'Very excited about life'],                      category: 'Daily Life' },
+
+  // ── Travel ──────────────────────────────────────────────────────────────────
+  { word: 'Nomadic',       meaning: 'Moving from place to place without a permanent home',                options: ['Settled and stationary',                                   'Moving from place to place without a permanent home',                 'Very fast-moving',                                                   'Extremely social'],                             category: 'Travel'    },
+  { word: 'Itinerary',     meaning: 'A planned route or schedule for a journey',                          options: ['A type of luggage',                                        'A planned route or schedule for a journey',                           'A travel insurance policy',                                          'A foreign currency'],                           category: 'Travel'    },
+  { word: 'Layover',       meaning: 'A break in a journey, especially at an airport',                     options: ['Extra luggage fees',                                       'A break in a journey, especially at an airport',                      'A missed connection',                                                'A travel document'],                            category: 'Travel'    },
+  { word: 'Customs',       meaning: 'The official process of checking goods at a border',                 options: ['Local traditions only',                                    'The official process of checking goods at a border',                  'A travel tax',                                                       'A type of visa'],                               category: 'Travel'    },
+  { word: 'Souvenir',      meaning: 'A thing kept as a reminder of a person, place, or event',            options: ['A travel document',                                        'A thing kept as a reminder of a person, place, or event',             'A local food item',                                                  'A type of transport'],                          category: 'Travel'    },
+  { word: 'Expedition',    meaning: 'A journey undertaken for a specific purpose',                        options: ['A short daily walk',                                       'A journey undertaken for a specific purpose',                         'A cancelled trip',                                                   'A return flight'],                              category: 'Travel'    },
+  { word: 'Landmark',      meaning: 'A recognisable feature or object that marks a location',             options: ['A road sign',                                              'A recognisable feature or object that marks a location',              'A tourist ticket',                                                   'A city map'],                                   category: 'Travel'    },
+  { word: 'Detour',        meaning: 'A longer alternative route taken to avoid something',                options: ['A direct shortcut',                                        'A longer alternative route taken to avoid something',                 'A travel delay',                                                     'A missed turn'],                                category: 'Travel'    },
+
+  // ── Workplace ───────────────────────────────────────────────────────────────
+  { word: 'Ambiguous',     meaning: 'Open to more than one interpretation; unclear',                      options: ['Perfectly clear',                                          'Open to more than one interpretation; unclear',                       'Very loud and obvious',                                              'Completely finished'],                          category: 'Workplace' },
+  { word: 'Diligent',      meaning: 'Showing care and persistent effort in work',                         options: ['Carelessly fast',                                          'Showing care and persistent effort in work',                          'Stubbornly idle',                                                    'Openly dishonest'],                             category: 'Workplace' },
+  { word: 'Eloquent',      meaning: 'Fluent and persuasive in speaking or writing',                       options: ['Very quiet and shy',                                       'Fluent and persuasive in speaking or writing',                        'Confused and forgetful',                                             'Rude and aggressive'],                          category: 'Workplace' },
+  { word: 'Intricate',     meaning: 'Very complex or detailed in design or structure',                    options: ['Very simple and plain',                                    'Very complex or detailed in design or structure',                     'Completely broken',                                                  'Very noisy'],                                   category: 'Workplace' },
+  { word: 'Laconic',       meaning: 'Using very few words; brief and to the point',                       options: ['Speaking at great length',                                 'Using very few words; brief and to the point',                        'Very emotional',                                                     'Always agreeable'],                             category: 'Workplace' },
+  { word: 'Meticulous',    meaning: 'Very careful and precise about every detail',                        options: ['Extremely careless',                                       'Very careful and precise about every detail',                         'Very impatient',                                                     'Completely random'],                            category: 'Workplace' },
+  { word: 'Pragmatic',     meaning: 'Dealing with problems in a practical and realistic way',             options: ['Idealistic and dreamy',                                    'Dealing with problems in a practical and realistic way',              'Very emotional',                                                     'Strictly traditional'],                         category: 'Workplace' },
+  { word: 'Tenacious',     meaning: 'Holding firmly to something; very persistent',                       options: ['Easily giving up',                                         'Holding firmly to something; very persistent',                        'Very forgetful',                                                     'Openly dishonest'],                             category: 'Workplace' },
+  { word: 'Verbose',       meaning: 'Using more words than needed; long-winded',                          options: ['Very brief and clear',                                     'Using more words than needed; long-winded',                           'Completely silent',                                                  'Very precise'],                                 category: 'Workplace' },
+  { word: 'Delegate',      meaning: 'To assign a task or responsibility to someone else',                 options: ['To do everything yourself',                                'To assign a task or responsibility to someone else',                  'To cancel a project',                                                'To complain about work'],                       category: 'Workplace' },
+  { word: 'Collaborate',   meaning: 'To work jointly with others toward a common goal',                   options: ['To work entirely alone',                                   'To work jointly with others toward a common goal',                    'To compete against colleagues',                                      'To avoid responsibilities'],                    category: 'Workplace' },
+  { word: 'Proficient',    meaning: 'Competent and skilled at doing something',                           options: ['Completely untrained',                                     'Competent and skilled at doing something',                            'Slightly interested',                                                'Very slow to learn'],                           category: 'Workplace' },
+  { word: 'Redundant',     meaning: 'No longer needed or useful; superfluous',                            options: ['Absolutely essential',                                     'No longer needed or useful; superfluous',                             'Very important',                                                     'Newly created'],                                category: 'Workplace' },
+  { word: 'Innovative',    meaning: 'Introducing new ideas or methods; creative and original',            options: ['Strictly following old methods',                           'Introducing new ideas or methods; creative and original',             'Very slow to change',                                                'Copying others exactly'],                       category: 'Workplace' },
+  { word: 'Complacent',    meaning: 'Showing uncritical satisfaction with oneself; self-satisfied',       options: ['Always striving to improve',                               'Showing uncritical satisfaction with oneself; self-satisfied',         'Very hard-working',                                                  'Deeply unhappy'],                               category: 'Workplace' },
+
+  // ── Academic ────────────────────────────────────────────────────────────────
+  { word: 'Abundant',      meaning: 'Existing in large quantities; more than enough',                     options: ['Extremely rare',                                           'Existing in large quantities; more than enough',                      'Slightly damaged',                                                   'Completely invisible'],                         category: 'Academic'  },
+  { word: 'Ephemeral',     meaning: 'Lasting for only a very short time',                                 options: ['Lasting forever',                                          'Lasting for only a very short time',                                  'Very heavy and solid',                                               'Extremely loud'],                               category: 'Academic'  },
+  { word: 'Harbinger',     meaning: 'A sign or warning that something is to come',                        options: ['A final conclusion',                                       'A sign or warning that something is to come',                         'A loud celebration',                                                 'A sudden disappearance'],                       category: 'Academic'  },
+  { word: 'Insidious',     meaning: 'Proceeding in a gradual, harmful, and subtle way',                   options: ['Openly helpful',                                           'Proceeding in a gradual, harmful, and subtle way',                    'Very obvious and loud',                                              'Completely harmless'],                          category: 'Academic'  },
+  { word: 'Hypothesis',    meaning: 'A proposed explanation made on the basis of limited evidence',       options: ['A proven scientific law',                                  'A proposed explanation made on the basis of limited evidence',         'A final research conclusion',                                        'A published textbook'],                         category: 'Academic'  },
+  { word: 'Ambivalent',    meaning: 'Having mixed feelings or contradictory ideas about something',       options: ['Completely certain',                                       'Having mixed feelings or contradictory ideas about something',         'Very enthusiastic',                                                  'Deeply committed'],                             category: 'Academic'  },
+  { word: 'Empirical',     meaning: 'Based on observation or experience rather than theory',              options: ['Based purely on guesswork',                                'Based on observation or experience rather than theory',               'Completely theoretical',                                             'Historically recorded'],                        category: 'Academic'  },
+  { word: 'Paradox',       meaning: 'A statement that contradicts itself but may be true',                options: ['A simple straightforward fact',                             'A statement that contradicts itself but may be true',                  'A mathematical formula',                                             'A historical event'],                           category: 'Academic'  },
+  { word: 'Obsolete',      meaning: 'No longer produced or used; out of date',                            options: ['Modern and cutting-edge',                                  'No longer produced or used; out of date',                             'Very popular currently',                                             'Recently invented'],                            category: 'Academic'  },
+
+  // ── Social ──────────────────────────────────────────────────────────────────
+  { word: 'Benevolent',    meaning: 'Well-meaning and kindly toward others',                              options: ['Constantly angry',                                         'Well-meaning and kindly toward others',                               'Very secretive',                                                     'Easily frightened'],                            category: 'Social'    },
+  { word: 'Candid',        meaning: 'Truthful and straightforward; frank',                                options: ['Deliberately vague',                                       'Truthful and straightforward; frank',                                 'Overly formal',                                                      'Extremely shy'],                                category: 'Social'    },
+  { word: 'Garrulous',     meaning: 'Excessively talkative, especially on trivial matters',               options: ['Very quiet and reserved',                                  'Excessively talkative, especially on trivial matters',                'Completely honest',                                                  'Deeply thoughtful'],                            category: 'Social'    },
+  { word: 'Hostile',       meaning: 'Showing aggression or opposition; unfriendly',                       options: ['Very welcoming',                                           'Showing aggression or opposition; unfriendly',                        'Quietly nervous',                                                    'Extremely helpful'],                            category: 'Social'    },
+  { word: 'Jovial',        meaning: 'Cheerful and friendly in manner',                                    options: ['Deeply serious',                                           'Cheerful and friendly in manner',                                     'Always angry',                                                       'Frequently absent'],                            category: 'Social'    },
+  { word: 'Zealous',       meaning: 'Having great energy or enthusiasm for a cause',                      options: ['Very indifferent',                                         'Having great energy or enthusiasm for a cause',                        'Easily bored',                                                       'Quietly modest'],                               category: 'Social'    },
+  { word: 'Empathy',       meaning: "Understanding and sharing another person's feelings",                options: ['Lack of any emotion',                                      "Understanding and sharing another person's feelings",                  'Strong physical ability',                                            'Hatred of others'],                             category: 'Social'    },
+  { word: 'Gregarious',    meaning: 'Fond of the company of others; sociable',                            options: ['Preferring to be alone',                                   'Fond of the company of others; sociable',                             'Easily irritated by people',                                         'Very formal in manner'],                        category: 'Social'    },
+  { word: 'Condescending', meaning: 'Acting as if others are inferior or less important',                 options: ['Treating everyone as equal',                               'Acting as if others are inferior or less important',                   'Being overly generous',                                              'Showing great admiration'],                     category: 'Social'    },
+  { word: 'Tactful',       meaning: 'Careful not to offend or upset others',                              options: ['Deliberately rude',                                        'Careful not to offend or upset others',                               'Very blunt and harsh',                                               'Completely indifferent'],                       category: 'Social'    },
+  { word: 'Arrogant',      meaning: "Having an exaggerated sense of one's own importance",                options: ['Very humble and modest',                                   "Having an exaggerated sense of one's own importance",                  'Extremely shy and quiet',                                            'Very kind and generous'],                       category: 'Social'    },
+  { word: 'Cynical',       meaning: 'Believing that people are motivated only by self-interest',          options: ['Trusting and optimistic',                                  'Believing that people are motivated only by self-interest',            'Very emotional and sensitive',                                       'Deeply religious'],                             category: 'Social'    },
+  { word: 'Introverted',   meaning: 'Tending to be inward-looking and prefer solitude',                   options: ['Very outgoing and social',                                 'Tending to be inward-looking and prefer solitude',                    'Extremely talkative',                                                'Always seeking attention'],                     category: 'Social'    },
 ]
 
 const CATEGORY_CONFIG = {
@@ -74,7 +110,6 @@ function ResultScreen({ score, total, onRestart }) {
         <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 6 }}>{message}</p>
       </div>
 
-      {/* Ring */}
       <div style={{ position: 'relative', width: 140, height: 140 }}>
         <svg viewBox="0 0 120 120" width="140" height="140">
           <circle cx="60" cy="60" r="52" fill="none" stroke="var(--track)" strokeWidth="9"/>
@@ -91,7 +126,6 @@ function ResultScreen({ score, total, onRestart }) {
         </div>
       </div>
 
-      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, width: '100%' }}>
         {[
           { icon: '✅', label: 'Correct', value: score,         color: '#10b981' },
@@ -153,7 +187,6 @@ export function VocabQuizPage() {
   // ── Landing ──────────────────────────────────────────────────────────────────
   if (!deck) return (
     <div style={{ padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
-
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 56, marginBottom: 12 }}>📝</div>
         <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Vocabulary quiz</h2>
@@ -162,7 +195,6 @@ export function VocabQuizPage() {
         </p>
       </div>
 
-      {/* Category badges */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', width: '100%', padding: '0 4px' }}>
         {Object.entries(CATEGORY_CONFIG).map(([name, cfg]) => (
           <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 99, background: cfg.bg, border: `1px solid ${cfg.color}33`, flexShrink: 0 }}>
@@ -172,12 +204,11 @@ export function VocabQuizPage() {
         ))}
       </div>
 
-      {/* Quick stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, width: '100%' }}>
         {[
-          { icon: '📖', label: `${TOTAL} words`,   sub: 'per quiz' },
-          { icon: '🎯', label: '4 choices',         sub: 'per word' },
-          { icon: '⏱️', label: '~3 min',            sub: 'to finish' },
+          { icon: '📖', label: `${TOTAL} words`, sub: 'per quiz' },
+          { icon: '🎯', label: '4 choices',       sub: 'per word' },
+          { icon: '⏱️', label: '~3 min',          sub: 'to finish' },
         ].map((c, i) => (
           <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '14px 8px', textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
             <div style={{ fontSize: 22, marginBottom: 4 }}>{c.icon}</div>
@@ -203,10 +234,10 @@ export function VocabQuizPage() {
   if (done) return <ResultScreen score={score} total={TOTAL} onRestart={startQuiz}/>
 
   // ── Question ──────────────────────────────────────────────────────────────────
-  const answered   = selected !== null
-  const gotRight   = answered && selected === q.meaning
-  const catCfg     = CATEGORY_CONFIG[q.category] || CATEGORY_CONFIG['Daily Life']
-  const pctDone    = ((qIndex + (answered ? 1 : 0)) / TOTAL) * 100
+  const answered = selected !== null
+  const gotRight = answered && selected === q.meaning
+  const catCfg   = CATEGORY_CONFIG[q.category] || CATEGORY_CONFIG['Daily Life']
+  const pctDone  = ((qIndex + (answered ? 1 : 0)) / TOTAL) * 100
 
   return (
     <>
@@ -231,32 +262,26 @@ export function VocabQuizPage() {
 
       <div style={{ padding: '20px 20px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* Progress header */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>
-              {qIndex + 1} / {TOTAL}
-            </span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>{qIndex + 1} / {TOTAL}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: '#10b981' }}>✅ {score} correct</span>
           </div>
           <div style={{ height: 6, background: 'var(--track)', borderRadius: 99, overflow: 'hidden' }}>
             <div style={{
               height: '100%', borderRadius: 99,
               width: `${pctDone}%`,
-              background: `linear-gradient(90deg, #6366f1, var(--accent))`,
+              background: 'linear-gradient(90deg, #6366f1, var(--accent))',
               transition: 'width 0.35s ease',
             }}/>
           </div>
         </div>
 
-        {/* Word card */}
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 24, padding: '32px 24px', textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
-          {/* Category badge */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 20, padding: '6px 14px', borderRadius: 99, background: catCfg.bg, border: `1px solid ${catCfg.color}33` }}>
             <span style={{ fontSize: 14 }}>{catCfg.emoji}</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: catCfg.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{q.category}</span>
           </div>
-
           <div style={{ fontSize: 42, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-1.5px', marginBottom: 10 }}>
             {q.word}
           </div>
@@ -265,22 +290,20 @@ export function VocabQuizPage() {
           </div>
         </div>
 
-        {/* Options */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {q.options.map((opt, i) => {
-            const isCorrect  = opt === q.meaning
-            const isPicked   = opt === selected
-
-            let bg          = 'var(--bg-card)'
-            let border      = 'var(--border)'
-            let textColor   = 'var(--text-body)'
-            let icon        = null
-            let anim        = 'none'
-            let fontWeight  = 500
+            const isCorrect = opt === q.meaning
+            const isPicked  = opt === selected
+            let bg         = 'var(--bg-card)'
+            let border     = 'var(--border)'
+            let textColor  = 'var(--text-body)'
+            let icon       = null
+            let anim       = 'none'
+            let fontWeight = 500
 
             if (answered) {
-              if (isCorrect)              { bg = 'rgba(16,185,129,0.08)'; border = 'rgba(16,185,129,0.5)'; textColor = '#10b981'; icon = '✅'; fontWeight = 700; anim = 'vqCorrect 0.4s ease' }
-              else if (isPicked)          { bg = 'rgba(239,68,68,0.08)'; border = 'rgba(239,68,68,0.5)'; textColor = '#f87171'; icon = '❌'; anim = 'vqWrong 0.4s ease' }
+              if (isCorrect)     { bg = 'rgba(16,185,129,0.08)'; border = 'rgba(16,185,129,0.5)'; textColor = '#10b981'; icon = '✅'; fontWeight = 700; anim = 'vqCorrect 0.4s ease' }
+              else if (isPicked) { bg = 'rgba(239,68,68,0.08)';  border = 'rgba(239,68,68,0.5)';  textColor = '#f87171'; icon = '❌'; anim = 'vqWrong 0.4s ease' }
             }
 
             return (
@@ -303,7 +326,6 @@ export function VocabQuizPage() {
           })}
         </div>
 
-        {/* Feedback */}
         {answered && (
           <div style={{
             padding: '16px 18px', borderRadius: 16, animation: 'vqFade 0.25s ease',
@@ -319,7 +341,6 @@ export function VocabQuizPage() {
           </div>
         )}
 
-        {/* Next button */}
         {answered && (
           <button onClick={handleNext} style={{
             width: '100%', padding: '18px 0', borderRadius: 16, border: 'none',
