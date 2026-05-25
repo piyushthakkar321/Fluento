@@ -51,11 +51,14 @@ export function useVoiceRecorder({ onTranscript, onError }) {
   method: 'POST',
   body: form,
 })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(`${res.status} – ${detail}`)
+      }
       const { text } = await res.json()
       onTranscript?.(text.trim())
     } catch (err) {
-      onError?.('Transcription failed. Try again.')
+      onError?.(`Transcription failed: ${err.message}`)
     } finally {
       setState('idle')
     }
