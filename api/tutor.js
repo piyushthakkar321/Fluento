@@ -37,30 +37,36 @@ Always sound like a helpful, encouraging friend.`
 }
 
 // ── In-memory rate limiting ───────────────────────────────────────────────────
-const userHits = new Map()   // userId  → { count, resetAt }
-const ipHits   = new Map()   // ip      → { count, resetAt }
+const userHits = new Map()
+const ipHits   = new Map()
 
 const USER_LIMIT = 20
 const IP_LIMIT   = 50
-const WINDOW_MS  = 60 * 60 * 1000   // 1 hour
+const WINDOW_MS  = 60 * 60 * 1000
 
 function checkLimit(map, key, limit) {
-  const now  = Date.now()
+  const now   = Date.now()
   const entry = map.get(key)
 
   if (!entry || now > entry.resetAt) {
     map.set(key, { count: 1, resetAt: now + WINDOW_MS })
-    return false   // not limited
+    return false
   }
 
   entry.count++
-  if (entry.count > limit) return true   // limited
+  if (entry.count > limit) return true
 
   return false
 }
 
+// Clean up expired entries every hour
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, val] of userHits) if (now > val.resetAt) userHits.delete(key)
+  for (const [key, val] of ipHits)   if (now > val.resetAt) ipHits.delete(key)
+}, WINDOW_MS)
+
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -76,11 +82,18 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'You have reached your hourly limit. Please try again later.' })
   }
 
-  const { message, history = [], difficulty = 'medium' } = req.body
+  // ── Input validation ──────────────────────────────────────────────────────
+  const { message, difficulty = 'medium' } = req.body
+  const history = Array.isArray(req.body.history) ? req.body.history.slice(-10) : []
 
   if (!message || typeof message !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid message' })
   }
+  if (message.length > 1000) {
+    return res.status(400).json({ error: 'Message too long. Please keep it under 1000 characters.' })
+  }
+
+  const safeDifficulty = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium'
 
   const groqKey = process.env.GROQ_API_KEY
   if (!groqKey) {
@@ -98,8 +111,8 @@ export default async function handler(req, res) {
         model: 'llama-3.3-70b-versatile',
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: SYSTEM(difficulty) },
-          ...history.slice(-10),            // cap history to last 10 messages
+          { role: 'system', content: SYSTEM(safeDifficulty) },
+          ...history,
           { role: 'user', content: message },
         ],
       }),
@@ -112,7 +125,18 @@ export default async function handler(req, res) {
     }
 
     const groqData = await groqRes.json()
-    const parsed   = JSON.parse(groqData.choices[0].message.content)
+
+    let parsed
+    try {
+      parsed = JSON.parse(groqData.choices[0].message.content)
+    } catch {
+      console.error('Failed to parse Groq response:', groqData.choices[0].message.content)
+      return res.status(502).json({ error: 'Invalid response from AI. Please try again.' })
+    }
+
+    if (!parsed.reply || typeof parsed.score !== 'number') {
+      return res.status(502).json({ error: 'Incomplete response from AI. Please try again.' })
+    }
 
     return res.status(200).json(parsed)
   } catch (err) {

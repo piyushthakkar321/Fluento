@@ -291,9 +291,9 @@ export function TutorPage({ onSessionSaved, streakKey, userName }) {
         score:      result.score,
       })
       onSessionSaved?.()
-    } catch {
-      setTurns(prev => prev.slice(0, -1))    // remove pending turn on error
-      setError('Something went wrong. Please try again.')
+    } catch (err) {
+      setTurns(prev => prev.slice(0, -1))
+      setError(err.message || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
